@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Input, Menu } from "@headlessui/react";
-import { FaSearch } from "react-icons/fa";
+import { FaBars, FaSearch } from "react-icons/fa";
 import clsx from "clsx";
 import { useSelector } from "react-redux";
 import ThemeToggle from "./ThemeToggle";
@@ -35,9 +35,12 @@ export default function Header() {
               "focus:outline-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-white/25"
             )}
           />
-          <button type="submit" aria-label="Search">
+          <button type="submit" aria-label="Search" className="ml-3">
             <FaSearch
-              className={clsx(darkMode ? "text-gray-400" : "text-slate-600")}
+              className={clsx(
+                "mr-3",
+                darkMode ? "text-gray-400" : "text-slate-600"
+              )}
             />
           </button>
         </form>
@@ -82,11 +85,10 @@ export default function Header() {
             {({ open }) => (
               <>
                 <Menu.Button className="focus:outline-none">
-                  <span
+                  <FaBars
                     className={clsx(darkMode ? "text-white" : "text-slate-700")}
-                  >
-                    Menu
-                  </span>
+                    aria-label="Menu"
+                  />
                 </Menu.Button>
                 <Menu.Items
                   className={clsx(
