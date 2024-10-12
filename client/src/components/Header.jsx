@@ -4,6 +4,7 @@ import { FaBars, FaSearch } from "react-icons/fa";
 import clsx from "clsx";
 import { useSelector } from "react-redux";
 import ThemeToggle from "./ThemeToggle";
+import logo from '../assets/logo.png';
 
 export default function Header() {
   const darkMode = useSelector((state) => state.theme.darkMode);
@@ -14,7 +15,12 @@ export default function Header() {
     >
       <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
         <Link to="/">
-          <h1 className="font-bold text-sm sm:text-xl flex flex-wrap">
+          <h1 className="font-bold text-sm sm:text-xl flex items-center">
+            <img
+              src={logo} 
+              alt="EstateLink Logo" 
+              className="mr-2 h-8 w-8" 
+            />
             <span className={clsx(darkMode ? "text-white" : "text-slate-700")}>
               EstateLink
             </span>
