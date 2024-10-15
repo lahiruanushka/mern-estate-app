@@ -1,32 +1,29 @@
-import { useSelector, useDispatch } from "react-redux";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toggleTheme } from "../features/theme/themeSlice";
-import { Sun, Moon } from "lucide-react";
+import { FaMoon, FaSun } from "react-icons/fa";
 
-export default function ThemeToggle() {
-  const darkMode = useSelector((state) => state.theme.darkMode);
+const ThemeToggle = () => {
   const dispatch = useDispatch();
+  const darkMode = useSelector((state) => state.theme.darkMode);
+
+  const handleToggle = () => {
+    dispatch(toggleTheme());
+  };
 
   return (
     <button
-      onClick={() => dispatch(toggleTheme())}
-      className={`
-        p-2 rounded-full transition-colors duration-200
-        ${
-          darkMode
-            ? "bg-gray-800 text-yellow-300 hover:bg-gray-700"
-            : "bg-yellow-100 text-gray-800 hover:bg-yellow-200"
-        }
-      `}
+      onClick={handleToggle}
+      className="p-2 rounded-full bg-gray-200 dark:bg-gray-600"
       aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
     >
       {darkMode ? (
-        <Sun size={24} className="transition-transform duration-200 rotate-0" />
+        <FaSun className="text-yellow-400" />
       ) : (
-        <Moon
-          size={24}
-          className="transition-transform duration-200 rotate-0"
-        />
+        <FaMoon className="text-gray-700" />
       )}
     </button>
   );
-}
+};
+
+export default ThemeToggle;
