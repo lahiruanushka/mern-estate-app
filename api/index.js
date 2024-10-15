@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRotes from "./routes/userRoutes.js";
 import authRotes from "./routes/authRoutes.js";
+import errorHandler from "./middlewares/errorHandler.js";
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +18,9 @@ app.use(express.json());
 // Routes
 app.use("/api/user", userRotes);
 app.use("/api/auth", authRotes);
+
+// Middlewares
+app.use(errorHandler);
 
 // Port and Server
 const PORT = process.env.PORT || 5000;
