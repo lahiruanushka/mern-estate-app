@@ -6,11 +6,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { authService } from "../../services/authService";
 
-const signUpSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
+const signUpSchema = z
+  .object({
+    username: z
+      .string()
+      .min(3, "Username must be at least 3 characters")
+      .regex(/^[a-zA-Z0-9]+$/, "Username can only contain letters and numbers"),
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 export default function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -104,6 +113,26 @@ export default function SignUpPage() {
           )}
         </div>
 
+        <div>
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            Confirm Password
+          </label>
+          <input
+            id="confirmPassword"
+            type="password"
+            {...register("confirmPassword")}
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          />
+          {errors.confirmPassword && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.confirmPassword.message}
+            </p>
+          )}
+        </div>
+
         <button
           type="submit"
           disabled={isSubmitting}
@@ -139,15 +168,7 @@ export default function SignUpPage() {
         </button>
       </form>
 
-      {error && (
-        <div
-          className="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline"> {error}</span>
-        </div>
-      )}
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
       <div className="flex gap-2 mt-5 justify-center">
         <p className="text-sm text-gray-600">Have an account?</p>
