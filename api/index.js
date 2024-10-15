@@ -1,22 +1,23 @@
 import express from "express";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
-import userRoter from "./routes/user.route.js";
+import connectDB from "./config/db.js";
+import userRotes from "./routes/userRoutes.js";
+import authRotes from "./routes/authRoutes.js";
 
-const port = 3000;
-const app = express();
+// Load environment variables
 dotenv.config();
 
-mongoose
-  .connect(process.env.MONGO)
-  .then(() => {
-    console.log("Connected to MongoDB!");
-  })
-  .catch((error) => {
-    console.log(error);
-  });
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}!`);
-});
+// Connect to database
+connectDB();
 
-app.use("/api/user", userRoter);
+const app = express();
+
+app.use(express.json());
+
+// Routes
+app.use("/api/user", userRotes);
+app.use("/api/auth", authRotes);
+
+// Port and Server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
