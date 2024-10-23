@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Dialog, Transition } from "@headlessui/react";
 import { useForm } from "react-hook-form";
@@ -11,6 +11,7 @@ import {
   signInSuccess,
   signInFailure,
 } from "../features/user/userSlice";
+import { HiEye, HiEyeOff } from "react-icons/hi";
 
 const signInSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -21,6 +22,7 @@ export default function SignInPage() {
   const { loading, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -29,6 +31,10 @@ export default function SignInPage() {
   } = useForm({
     resolver: zodResolver(signInSchema),
   });
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -76,12 +82,23 @@ export default function SignInPage() {
           >
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            {...register("password")}
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          />
+
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"} // Toggle between 'text' and 'password'
+              {...register("password")}
+              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400"
+            >
+              {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+            </button>
+          </div>
+
           {errors.password && (
             <p className="mt-2 text-sm text-red-600">
               {errors.password.message}
