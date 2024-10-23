@@ -97,7 +97,7 @@ export const signin = async (req, res, next) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Ensure secure cookies in production
       sameSite: "Strict", // Helps prevent CSRF attacks
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
     });
 
     // Respond with user info (excluding password)
@@ -108,9 +108,76 @@ export const signin = async (req, res, next) => {
       message: "Login successful!",
       user: userWithoutPassword,
     });
+
   } catch (error) {
     // Handle unexpected errors
     next(
+      createError(500, "An unexpected error occurred. Please try again later.")
+    );
+  }
+};
+
+export const google = async (req, res, next) => {
+  const { email, name, photo } = req.body;
+
+  try {
+    // Validate input
+    if (!email || !name) {
+      return next(createError(400, "Email and name are required."));
+    }
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // User exists, create JWT and send response
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "7d", // Token expires in 7 days
+      });
+      const { password: pass, ...userWithoutPassword } = user._doc;
+
+      return res
+        .cookie("access_token", token, {
+          httpOnly: true,
+          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Cookie expires in 7 days
+        })
+        .status(200)
+        .json(userWithoutPassword);
+        
+    } else {
+      // User does not exist, create new user
+      const generatedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+
+      const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
+
+      const newUser = new User({
+        username:
+          name.split(" ").join("").toLowerCase() +
+          Math.random().toString(36).slice(-4),
+        email,
+        password: hashedPassword,
+        avatar: photo,
+      });
+
+      await newUser.save();
+
+      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+        expiresIn: "7d", // Token expires in 7 days
+      });
+
+      const { password: pass, ...userWithoutPassword } = newUser._doc;
+      return res
+        .cookie("access_token", token, {
+          httpOnly: true,
+          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Cookie expires in 7 days
+        })
+        .status(200)
+        .json(userWithoutPassword);
+    }
+  } catch (error) {
+    // Catch any errors
+    return next(
       createError(500, "An unexpected error occurred. Please try again later.")
     );
   }
