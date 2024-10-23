@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import bcryptjs from "bcryptjs";
 import { createError } from "../utils/customError.js";
+import jwt from "jsonwebtoken";
 
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
@@ -57,5 +58,60 @@ export const signup = async (req, res, next) => {
         )
       );
     }
+  }
+};
+
+export const signin = async (req, res, next) => {
+  const { email, password } = req.body;
+
+  try {
+    // Validate input
+    if (!email || !password) {
+      return next(createError(400, "Email and password are required."));
+    }
+
+    // Find the user by email
+    const validUser = await User.findOne({ email });
+
+    // If user does not exist
+    if (!validUser) {
+      return next(createError(401, "Invalid email or password."));
+    }
+
+    // Validate password
+    const validPassword = await bcryptjs.compare(password, validUser.password);
+
+    if (!validPassword) {
+      return next(createError(401, "Invalid email or password."));
+    }
+
+    // Generate a JWT token with user ID and a secure expiration
+    const token = jwt.sign(
+      { id: validUser._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" } // Token expires in 24 hours
+    );
+
+    // Set the JWT as an HttpOnly cookie for security
+    res.cookie("access_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Ensure secure cookies in production
+      sameSite: "Strict", // Helps prevent CSRF attacks
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+    });
+
+    // Respond with user info (excluding password)
+    const { password: _, ...userWithoutPassword } = validUser._doc;
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful!",
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    // Handle unexpected errors
+    next(
+      createError(500, "An unexpected error occurred. Please try again later.")
+    );
   }
 };
