@@ -4,7 +4,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { authService } from "../../services/authService";
+import { authService } from "../services/authService";
 
 const signUpSchema = z
   .object({

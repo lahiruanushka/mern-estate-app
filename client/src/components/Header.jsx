@@ -72,7 +72,7 @@ export default function Header() {
               About
             </span>
           </Link>
-          <Link to="/profile">
+          <Link to="/sign-in">
             <span
               className={clsx(
                 "hover:underline",
