@@ -9,66 +9,35 @@ import defaultProfile from "../assets/images/default-profile.png";
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
-  const darkMode = useSelector((state) => state.theme.darkMode);
-
-  console.log(currentUser);
 
   return (
-    <header
-      className={clsx("shadow-md", darkMode ? "bg-gray-800" : "bg-slate-200")}
-    >
+    <header className="shadow-md bg-slate-200 dark:bg-gray-800">
       <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
         <Link to="/">
           <h1 className="font-bold text-sm sm:text-xl flex items-center">
             <img src={logo} alt="EstateLink Logo" className="mr-2 h-8 w-8" />
-            <span className={clsx(darkMode ? "text-white" : "text-slate-700")}>
-              EstateLink
-            </span>
+            <span className="text-slate-700 dark:text-white">EstateLink</span>
           </h1>
         </Link>
 
-        <form
-          className={clsx(
-            "p-3 rounded-lg flex items-center",
-            darkMode ? "bg-gray-700" : "bg-slate-100"
-          )}
-        >
+        <form className="p-3 rounded-lg flex items-center bg-slate-100 dark:bg-gray-700">
           <Input
             placeholder="Search..."
-            className={clsx(
-              "block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm",
-              darkMode ? "text-white" : "text-dark",
-              "focus:outline-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-white/25"
-            )}
+            className="block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm text-dark dark:text-white focus:outline-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-white/25"
           />
           <button type="submit" aria-label="Search" className="ml-3">
-            <FaSearch
-              className={clsx(
-                "mr-3",
-                darkMode ? "text-gray-400" : "text-slate-600"
-              )}
-            />
+            <FaSearch className="text-slate-600 dark:text-gray-400" />
           </button>
         </form>
 
         <nav className="hidden sm:flex gap-4 items-center">
           <Link to="/">
-            <span
-              className={clsx(
-                "hover:underline",
-                darkMode ? "text-white" : "text-slate-700"
-              )}
-            >
+            <span className="text-slate-700 dark:text-white hover:underline">
               Home
             </span>
           </Link>
           <Link to="/about">
-            <span
-              className={clsx(
-                "hover:underline",
-                darkMode ? "text-white" : "text-slate-700"
-              )}
-            >
+            <span className="text-slate-700 dark:text-white hover:underline">
               About
             </span>
           </Link>
@@ -80,7 +49,7 @@ export default function Header() {
                 alt="profile"
               />
             ) : (
-              <li className=" text-slate-700 hover:underline"> Sign in</li>
+              <li className="text-slate-700 hover:underline">Sign in</li>
             )}
           </Link>
           <ThemeToggle />
@@ -93,29 +62,23 @@ export default function Header() {
               <>
                 <Menu.Button className="focus:outline-none">
                   <FaBars
-                    className={clsx(darkMode ? "text-white" : "text-slate-700")}
+                    className="text-slate-700 dark:text-white"
                     aria-label="Menu"
                   />
                 </Menu.Button>
                 <Menu.Items
                   className={clsx(
-                    "absolute right-0 mt-2 w-48 border rounded-md shadow-lg",
-                    darkMode ? "bg-gray-700" : "bg-white",
+                    "absolute right-0 mt-2 w-48 border rounded-md shadow-lg bg-white dark:bg-gray-700",
                     open ? "" : "hidden"
                   )}
                 >
-                  {/* Menu Items */}
                   <Menu.Item>
                     {({ active }) => (
                       <Link
                         to="/"
                         className={clsx(
-                          "block px-4 py-2 text-sm",
-                          {
-                            "bg-gray-600": active && darkMode,
-                            "bg-gray-100": active && !darkMode,
-                          },
-                          darkMode ? "text-white" : "text-gray-700"
+                          "block px-4 py-2 text-sm text-gray-700 dark:text-white",
+                          { "bg-gray-100 dark:bg-gray-600": active }
                         )}
                       >
                         Home
@@ -127,30 +90,21 @@ export default function Header() {
                       <Link
                         to="/about"
                         className={clsx(
-                          "block px-4 py-2 text-sm",
-                          {
-                            "bg-gray-600": active && darkMode,
-                            "bg-gray-100": active && ! darkMode,
-                          },
-                          darkMode ? "text-white" : "text-gray-700"
+                          "block px-4 py-2 text-sm text-gray-700 dark:text-white",
+                          { "bg-gray-100 dark:bg-gray-600": active }
                         )}
                       >
                         About
                       </Link>
                     )}
                   </Menu.Item>
-
                   <Menu.Item>
                     {({ active }) => (
                       <Link
                         to="/profile"
                         className={clsx(
-                          "block px-4 py-2 text-sm flex items-center",
-                          {
-                            "bg-gray-600": active && darkMode,
-                            "bg-gray-100": active && !darkMode,
-                          },
-                          darkMode ? "text-white" : "text-gray-700"
+                          "block px-4 py-2 text-sm flex items-center text-gray-700 dark:text-white",
+                          { "bg-gray-100 dark:bg-gray-600": active }
                         )}
                       >
                         {currentUser ? (
@@ -168,17 +122,12 @@ export default function Header() {
                       </Link>
                     )}
                   </Menu.Item>
-
                   <Menu.Item>
                     {({ active }) => (
                       <div
                         className={clsx(
-                          "block px-4 py-2 text-sm",
-                          {
-                            "bg-gray-600": active && darkMode,
-                            "bg-gray-100": active && !darkMode,
-                          },
-                          darkMode ? "text-white" : "text-gray-700"
+                          "block px-4 py-2 text-sm text-gray-700 dark:text-white",
+                          { "bg-gray-100 dark:bg-gray-600": active }
                         )}
                       >
                         <ThemeToggle />
