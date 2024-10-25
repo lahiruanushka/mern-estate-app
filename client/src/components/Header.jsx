@@ -4,10 +4,14 @@ import { FaBars, FaSearch } from "react-icons/fa";
 import clsx from "clsx";
 import { useSelector } from "react-redux";
 import ThemeToggle from "./ThemeToggle";
-import logo from '../assets/logo.png';
+import logo from "../assets/logo.png";
+import defaultProfile from "../assets/images/default-profile.png";
 
 export default function Header() {
+  const { currentUser } = useSelector((state) => state.user);
   const darkMode = useSelector((state) => state.theme.darkMode);
+
+  console.log(currentUser);
 
   return (
     <header
@@ -16,11 +20,7 @@ export default function Header() {
       <div className="flex justify-between items-center max-w-6xl mx-auto p-3">
         <Link to="/">
           <h1 className="font-bold text-sm sm:text-xl flex items-center">
-            <img
-              src={logo} 
-              alt="EstateLink Logo" 
-              className="mr-2 h-8 w-8" 
-            />
+            <img src={logo} alt="EstateLink Logo" className="mr-2 h-8 w-8" />
             <span className={clsx(darkMode ? "text-white" : "text-slate-700")}>
               EstateLink
             </span>
@@ -72,15 +72,16 @@ export default function Header() {
               About
             </span>
           </Link>
-          <Link to="/sign-in">
-            <span
-              className={clsx(
-                "hover:underline",
-                darkMode ? "text-white" : "text-slate-700"
-              )}
-            >
-              Sign in
-            </span>
+          <Link to="/profile">
+            {currentUser ? (
+              <img
+                className="rounded-full h-7 w-7 object-cover"
+                src={currentUser.avatar || defaultProfile}
+                alt="profile"
+              />
+            ) : (
+              <li className=" text-slate-700 hover:underline"> Sign in</li>
+            )}
           </Link>
           <ThemeToggle />
         </nav>
@@ -129,7 +130,7 @@ export default function Header() {
                           "block px-4 py-2 text-sm",
                           {
                             "bg-gray-600": active && darkMode,
-                            "bg-gray-100": active && !darkMode,
+                            "bg-gray-100": active && ! darkMode,
                           },
                           darkMode ? "text-white" : "text-gray-700"
                         )}
@@ -138,12 +139,13 @@ export default function Header() {
                       </Link>
                     )}
                   </Menu.Item>
+
                   <Menu.Item>
                     {({ active }) => (
                       <Link
                         to="/profile"
                         className={clsx(
-                          "block px-4 py-2 text-sm",
+                          "block px-4 py-2 text-sm flex items-center",
                           {
                             "bg-gray-600": active && darkMode,
                             "bg-gray-100": active && !darkMode,
@@ -151,10 +153,22 @@ export default function Header() {
                           darkMode ? "text-white" : "text-gray-700"
                         )}
                       >
-                        Sign in
+                        {currentUser ? (
+                          <>
+                            <img
+                              className="rounded-full h-7 w-7 object-cover mr-2"
+                              src={currentUser.avatar || defaultProfile}
+                              alt="profile"
+                            />
+                            <span>Profile</span>
+                          </>
+                        ) : (
+                          <span>Sign in</span>
+                        )}
                       </Link>
                     )}
                   </Menu.Item>
+
                   <Menu.Item>
                     {({ active }) => (
                       <div
