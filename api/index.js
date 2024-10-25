@@ -4,6 +4,7 @@ import connectDB from "./config/db.js";
 import userRotes from "./routes/userRoutes.js";
 import authRotes from "./routes/authRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
+import cookieParser from "cookie-parser";
 
 // Load environment variables
 dotenv.config();
@@ -14,6 +15,7 @@ connectDB();
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use("/api/user", userRotes);
