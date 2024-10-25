@@ -103,12 +103,7 @@ export const signin = async (req, res, next) => {
     // Respond with user info (excluding password)
     const { password: _, ...userWithoutPassword } = validUser._doc;
 
-    res.status(200).json({
-      success: true,
-      message: "Login successful!",
-      user: userWithoutPassword,
-    });
-
+    res.status(200).json(userWithoutPassword);
   } catch (error) {
     // Handle unexpected errors
     next(
@@ -142,7 +137,6 @@ export const google = async (req, res, next) => {
         })
         .status(200)
         .json(userWithoutPassword);
-        
     } else {
       // User does not exist, create new user
       const generatedPassword =

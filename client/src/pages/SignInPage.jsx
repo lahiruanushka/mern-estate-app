@@ -42,7 +42,7 @@ export default function SignInPage() {
       dispatch(signInStart());
       const response = await authService.signIn(data);
 
-      dispatch(signInSuccess(response.user));
+      dispatch(signInSuccess(response));
       navigate("/");
     } catch (err) {
       console.error(err);
