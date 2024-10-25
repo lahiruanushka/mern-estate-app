@@ -15,9 +15,13 @@ import {
   deleteUserFailure,
   deleteUserStart,
   deleteUserSuccess,
+  signOutUserFailure,
+  signOutUserStart,
+  signOutUserSuccess,
 } from "../features/user/userSlice";
 import { useDispatch } from "react-redux";
 import { userService } from "../services/userService";
+import { authService } from "../services/authService";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -136,11 +140,20 @@ export default function ProfilePage() {
       dispatch(deleteUserStart());
       const data = await userService.deleteUser(userId);
       console.log(data);
-      // Further actions, like redirecting or updating the UI, can follow here
       dispatch(deleteUserSuccess(data));
     } catch (error) {
       console.error(error.message);
       dispatch(deleteUserFailure(error.message));
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      dispatch(signOutUserStart());
+      const data = await authService.signOut();
+      dispatch(signOutUserSuccess(data));
+    } catch (error) {
+      dispatch(signOutUserFailure(error));
     }
   };
 
@@ -333,6 +346,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 className="text-sm font-medium text-gray-600 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300 transition-colors duration-200"
+                onClick={handleSignOut}
               >
                 Sign Out
               </button>

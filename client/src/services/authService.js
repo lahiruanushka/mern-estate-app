@@ -62,4 +62,19 @@ export const authService = {
       throw error;
     }
   },
+  async signOut() {
+    try {
+      const res = await fetch("/api/auth/signout", { method: "POST" });
+
+      if (!res.ok) {
+        throw new Error("Failed to sign out");
+      }
+
+      const data = await res.json();
+      return { success: true, message: data.message };
+    } catch (error) {
+      console.error("Sign-out failed:", error);
+      return { success: false, error: error.message };
+    }
+  },
 };
