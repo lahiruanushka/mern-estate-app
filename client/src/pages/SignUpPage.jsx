@@ -1,12 +1,12 @@
-import { useState, Fragment } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Dialog, Transition } from "@headlessui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { authService } from "../services/authService";
 import { HiEye, HiEyeOff } from "react-icons/hi";
 import { GoogleAuth } from "../components/GoogleAuth";
+import LoadingDialog from "../components/LoadingDialog";
 
 const signUpSchema = z
   .object({
@@ -198,7 +198,9 @@ export default function SignUpPage() {
 
           <div className="relative w-full flex items-center">
             <div className="flex-grow border-t border-gray-300"></div>
-            <span className="px-2 text-gray-500 bg-white dark:bg-black dark:text-white z-10">or</span>
+            <span className="px-2 text-gray-500 bg-white dark:bg-black dark:text-white z-10">
+              or
+            </span>
             <div className="flex-grow border-t border-gray-300"></div>
           </div>
 
@@ -218,49 +220,11 @@ export default function SignUpPage() {
         </Link>
       </div>
 
-      <Transition appear show={isSubmitting} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={() => {}}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
-                  >
-                    Signing Up...
-                  </Dialog.Title>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      Your account is being created, please wait.
-                    </p>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </div>
-        </Dialog>
-      </Transition>
+      <LoadingDialog
+        isOpen={isSubmitting}
+        title="Signing Up..."
+        message=" Your account is being created, please wait."
+      />
     </div>
   );
 }
