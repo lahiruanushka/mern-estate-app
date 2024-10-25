@@ -8,14 +8,22 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+} from "../features/user/userSlice";
+import { useDispatch } from "react-redux";
+import { updateUser } from "../services/userService";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export default function ProfilePage() {
-  const { currentUser } = useSelector((state) => state.user);
-  const [loading, setLoading] = useState(false);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
   const [filePerc, setFilePerc] = useState(0);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const dispatch = useDispatch();
   const [uploadStatus, setUploadStatus] = useState({
     error: false,
     message: "",
@@ -82,13 +90,14 @@ export default function ProfilePage() {
           setFormData((prev) => ({ ...prev, avatar: downloadURL }));
           setUploadStatus({
             error: false,
-            message: "Image uploaded successfully!",
+            message:
+              "Image uploaded successfully! Click Update profile button to save it",
             type: "success",
           });
         } catch (error) {
           setUploadStatus({
             error: true,
-            message: "Failed to get download URL",
+            message: error || "Failed to get download URL",
             type: "error",
           });
         }
@@ -103,16 +112,20 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
+    console.log(formData);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // Here you would typically make your API call to update the profile
+      dispatch(updateUserStart());
+
+      // API call
+      const updatedUser = await updateUser(currentUser._id, formData);
+      dispatch(updateUserSuccess(updatedUser));
+      setUpdateSuccess(true);
     } catch (error) {
-      // Error handling
-    } finally {
-      setLoading(false);
+      console.log(error);
+      dispatch(updateUserFailure(error.message));
+      setUpdateSuccess(false);
     }
   };
 
@@ -140,7 +153,6 @@ export default function ProfilePage() {
               Update your profile information and preferences
             </p>
           </div>
-
           <form onSubmit={handleSubmit} className="space-y-6 px-4 py-5 sm:p-6">
             {/* Profile Image Section */}
             <div className="flex flex-col items-center space-y-4">
@@ -282,6 +294,16 @@ export default function ProfilePage() {
               )}
             </button>
           </form>
+
+          {/* Messages */}
+          <div className="items-center p-5">
+            {error && <p className="text-red-600 mt-1">{error}</p>}
+            {updateSuccess && (
+              <p className="text-green-600 mt-1">
+                Profile is updated successfully!
+              </p>
+            )}
+          </div>
 
           {/* Footer Actions */}
           <div className="px-4 py-4 sm:px-6 border-t border-gray-200 dark:border-gray-700">
