@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Input, Menu } from "@headlessui/react";
 import { FaBars, FaSearch } from "react-icons/fa";
 import clsx from "clsx";
@@ -9,6 +9,36 @@ import defaultProfile from "../assets/images/default-profile.png";
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
+  const location = useLocation();
+
+  // Function to check if a link is active
+  const isActive = (path) => {
+    if (path === '/' && location.pathname !== '/') {
+      return false;
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  // Reusable link style function
+  const getLinkStyles = (path) => {
+    return clsx(
+      "text-slate-700 dark:text-white hover:underline transition-colors duration-200",
+      {
+        "font-semibold text-blue-600 dark:text-blue-400 underline": isActive(path),
+      }
+    );
+  };
+
+  // Reusable mobile menu item style function
+  const getMobileMenuStyles = (active, path) => {
+    return clsx(
+      "block px-4 py-2 text-sm text-gray-700 dark:text-white",
+      {
+        "bg-gray-100 dark:bg-gray-600": active,
+        "font-semibold text-blue-600 dark:text-blue-400": isActive(path),
+      }
+    );
+  };
 
   return (
     <header className="shadow-md bg-slate-200 dark:bg-gray-800">
@@ -32,28 +62,33 @@ export default function Header() {
 
         <nav className="hidden sm:flex gap-4 items-center">
           <Link to="/">
-            <span className="text-slate-700 dark:text-white hover:underline">
+            <span className={getLinkStyles("/")}>
               Home
             </span>
           </Link>
 
           <Link to="/about">
-            <span className="text-slate-700 dark:text-white hover:underline">
+            <span className={getLinkStyles("/about")}>
               About
             </span>
           </Link>
 
           {currentUser ? (
             <Link to="/profile">
-              <img
-                className="rounded-full h-7 w-7 object-cover"
-                src={currentUser.avatar || defaultProfile}
-                alt="Profile"
-              />
+              <div className={clsx(
+                "flex items-center",
+                { "ring-2 ring-blue-500 rounded-full": isActive("/profile") }
+              )}>
+                <img
+                  className="rounded-full h-7 w-7 object-cover"
+                  src={currentUser.avatar || defaultProfile}
+                  alt="Profile"
+                />
+              </div>
             </Link>
           ) : (
             <Link to="/sign-in">
-              <span className="text-slate-700 dark:text-white hover:underline">
+              <span className={getLinkStyles("/sign-in")}>
                 Sign in
               </span>
             </Link>
@@ -83,10 +118,7 @@ export default function Header() {
                     {({ active }) => (
                       <Link
                         to="/"
-                        className={clsx(
-                          "block px-4 py-2 text-sm text-gray-700 dark:text-white",
-                          { "bg-gray-100 dark:bg-gray-600": active }
-                        )}
+                        className={getMobileMenuStyles(active, "/")}
                       >
                         Home
                       </Link>
@@ -96,10 +128,7 @@ export default function Header() {
                     {({ active }) => (
                       <Link
                         to="/about"
-                        className={clsx(
-                          "block px-4 py-2 text-sm text-gray-700 dark:text-white",
-                          { "bg-gray-100 dark:bg-gray-600": active }
-                        )}
+                        className={getMobileMenuStyles(active, "/about")}
                       >
                         About
                       </Link>
@@ -108,19 +137,24 @@ export default function Header() {
                   <Menu.Item>
                     {({ active }) => (
                       <Link
-                        to="/profile"
+                        to={currentUser ? "/profile" : "/sign-in"}
                         className={clsx(
-                          "block px-4 py-2 text-sm flex items-center text-gray-700 dark:text-white",
-                          { "bg-gray-100 dark:bg-gray-600": active }
+                          "block px-4 py-2 text-sm flex items-center",
+                          getMobileMenuStyles(active, currentUser ? "/profile" : "/sign-in")
                         )}
                       >
                         {currentUser ? (
                           <>
-                            <img
-                              className="rounded-full h-7 w-7 object-cover mr-2"
-                              src={currentUser.avatar || defaultProfile}
-                              alt="profile"
-                            />
+                            <div className={clsx(
+                              "flex items-center",
+                              { "ring-2 ring-blue-500 rounded-full": isActive("/profile") }
+                            )}>
+                              <img
+                                className="rounded-full h-7 w-7 object-cover mr-2"
+                                src={currentUser.avatar || defaultProfile}
+                                alt="profile"
+                              />
+                            </div>
                             <span>Profile</span>
                           </>
                         ) : (

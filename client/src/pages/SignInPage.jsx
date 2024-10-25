@@ -144,7 +144,7 @@ export default function SignInPage() {
 
           <div className="relative w-full flex items-center my-4">
             <div className="flex-grow border-t border-gray-300"></div>
-            <span className="px-2 text-gray-500 bg-white dark:bg-black dark:text-white z-10">
+            <span className="px-2 text-gray-500 bg-white dark:bg-gray-900 dark:text-white z-10">
               or
             </span>
             <div className="flex-grow border-t border-gray-300"></div>
