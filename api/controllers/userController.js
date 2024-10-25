@@ -59,3 +59,29 @@ export const updateUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteUser = async (req, res, next) => {
+  // Check if the user is authorized to delete the account
+  if (req.user.id !== req.params.id) {
+    return next(
+      createError(
+        401,
+        "Unauthorized action. You can only delete your own account."
+      )
+    );
+  }
+
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return next(createError(404, "User not found."));
+    }
+
+    // Clear the authentication token cookie
+    res.clearCookie("access_token");
+    res.status(200).json({ message: "User has been successfully deleted." });
+  } catch (error) {
+    next(error);
+  }
+};

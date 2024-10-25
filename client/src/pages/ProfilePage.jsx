@@ -12,9 +12,12 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
 } from "../features/user/userSlice";
 import { useDispatch } from "react-redux";
-import { updateUser } from "../services/userService";
+import { userService } from "../services/userService";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -118,14 +121,26 @@ export default function ProfilePage() {
     try {
       dispatch(updateUserStart());
 
-      // API call
-      const updatedUser = await updateUser(currentUser._id, formData);
-      dispatch(updateUserSuccess(updatedUser));
+      const data = await userService.updateUser(currentUser._id, formData);
+      dispatch(updateUserSuccess(data));
       setUpdateSuccess(true);
     } catch (error) {
       console.log(error);
       dispatch(updateUserFailure(error.message));
       setUpdateSuccess(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    try {
+      dispatch(deleteUserStart());
+      const data = await userService.deleteUser(userId);
+      console.log(data);
+      // Further actions, like redirecting or updating the UI, can follow here
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      console.error(error.message);
+      dispatch(deleteUserFailure(error.message));
     }
   };
 
@@ -375,7 +390,11 @@ export default function ProfilePage() {
                     <button
                       type="button"
                       className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-                      onClick={() => setIsDeleteModalOpen(false)}
+                      onClick={() => {
+                        console.log(currentUser._id);
+                        handleDeleteUser(currentUser._id);
+                        setIsDeleteModalOpen(false);
+                      }}
                     >
                       Delete Account
                     </button>

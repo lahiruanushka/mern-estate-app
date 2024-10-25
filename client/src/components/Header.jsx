@@ -36,22 +36,29 @@ export default function Header() {
               Home
             </span>
           </Link>
+
           <Link to="/about">
             <span className="text-slate-700 dark:text-white hover:underline">
               About
             </span>
           </Link>
-          <Link to="/profile">
-            {currentUser ? (
+
+          {currentUser ? (
+            <Link to="/profile">
               <img
                 className="rounded-full h-7 w-7 object-cover"
                 src={currentUser.avatar || defaultProfile}
-                alt="profile"
+                alt="Profile"
               />
-            ) : (
-              <li className="text-slate-700 hover:underline">Sign in</li>
-            )}
-          </Link>
+            </Link>
+          ) : (
+            <Link to="/sign-in">
+              <span className="text-slate-700 dark:text-white hover:underline">
+                Sign in
+              </span>
+            </Link>
+          )}
+
           <ThemeToggle />
         </nav>
 
