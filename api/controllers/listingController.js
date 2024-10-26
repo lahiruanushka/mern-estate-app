@@ -71,3 +71,27 @@ export const createListing = async (req, res, next) => {
     }
   }
 };
+
+// Get all listings created by a specific user
+export const getUserListings = async (req, res, next) => {
+  const { userId } = req.params;
+
+  try {
+    // Check if the authenticated user is the owner
+    if (userId !== req.user.id) {
+      return next(createError(403, "Unauthorized access to listings."));
+    }
+
+    const listings = await Listing.find({ userRef: userId });
+
+    if (listings.length === 0) {
+      return res.status(404).json({ message: "No listings found for this user." });
+    }
+
+    res.status(200).json(listings);
+  } catch (error) {
+    console.error(error);
+    next(createError(500, "An error occurred while retrieving user listings."));
+  }
+};
+
