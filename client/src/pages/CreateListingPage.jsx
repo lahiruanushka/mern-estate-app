@@ -20,22 +20,22 @@ import {
 import { app } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import StatusMessage from "../components/StatusMessage";
+import ListingTypeSelector from "../components/ListingTypeSelector";
 
 const CreateListingPage = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     address: "",
-    bedrooms: "",
-    bathrooms: "",
+    bedrooms: 1,
+    bathrooms: 1,
     regularPrice: "",
     discountedPrice: "",
-    sale: false,
-    rent: false,
     parking: false,
     furnished: false,
     offer: false,
-    firebaseImageUrls: [],
+    type: "rent", // Default type
+    imageUrls: [],
   });
 
   const [images, setImages] = useState([]);
@@ -63,27 +63,62 @@ const CreateListingPage = () => {
   };
 
   const handleChange = (e) => {
-    const { id, value } = e.target;
+    const { id, value, type } = e.target;
+
+    // Handle number inputs
+    if (type === "number") {
+      setFormData((prev) => ({
+        ...prev,
+        [id]: value === "" ? "" : Number(value),
+      }));
+      return;
+    }
+
+    // Handle text inputs and textareas
     setFormData((prev) => ({
       ...prev,
       [id]: value,
+    }));
+
+    setError(null);
+  };
+
+  const handleTypeChange = (newType) => {
+    setFormData((prev) => ({
+      ...prev,
+      type: newType,
     }));
     setError(null);
   };
 
   const validateForm = () => {
-    if (!formData.name.trim()) return "Property name is required";
-    if (!formData.address.trim()) return "Address is required";
-    if (!images.length) return "At least one image is required";
-    if (!formData.sale && !formData.rent)
-      return "Select either For Sale or For Rent";
-    if (
-      formData.offer &&
-      Number(formData.discountedPrice) >= Number(formData.regularPrice)
-    ) {
-      return "Discounted price must be less than regular price";
+    const errors = [];
+
+    if (!formData.name.trim()) errors.push("Property name is required");
+    if (!formData.address.trim()) errors.push("Address is required");
+    if (!images.length) errors.push("At least one image is required");
+
+    if (formData.regularPrice && formData.discountedPrice) {
+      if (Number(formData.discountedPrice) >= Number(formData.regularPrice)) {
+        errors.push("Discounted price must be less than regular price");
+      }
     }
-    return null;
+
+    if (
+      formData.bedrooms &&
+      (formData.bedrooms < 1 || formData.bedrooms > 10)
+    ) {
+      errors.push("Bedrooms must be between 1 and 10");
+    }
+
+    if (
+      formData.bathrooms &&
+      (formData.bathrooms < 1 || formData.bathrooms > 10)
+    ) {
+      errors.push("Bathrooms must be between 1 and 10");
+    }
+
+    return errors.length ? errors.join(". ") : null;
   };
 
   const storeImage = async (file, index) => {
@@ -142,7 +177,7 @@ const CreateListingPage = () => {
 
       const finalFormData = {
         ...formData,
-        firebaseImageUrls: uploadedUrls,
+        imageUrls: uploadedUrls,
       };
 
       console.log(finalFormData);
@@ -207,26 +242,24 @@ const CreateListingPage = () => {
             </div>
           </div>
 
+          {/* Listing Type Selection */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+              Listing Type
+            </h2>
+
+            <ListingTypeSelector
+              selectedType={formData.type}
+              onTypeChange={handleTypeChange}
+            />
+          </div>
+
           {/* Features */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
               Property Features
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <FeatureToggle
-                label="For Sale"
-                enabled={formData.sale}
-                onChange={(checked) =>
-                  setFormData({ ...formData, sale: checked })
-                }
-              />
-              <FeatureToggle
-                label="For Rent"
-                enabled={formData.rent}
-                onChange={(checked) =>
-                  setFormData({ ...formData, rent: checked })
-                }
-              />
               <FeatureToggle
                 label="Parking Available"
                 enabled={formData.parking}
