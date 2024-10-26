@@ -2,7 +2,7 @@ import Listing from "../models/listingModel.js";
 import { createError } from "../utils/customError.js";
 
 // Create a new listing
-export const createListing = async (req, res) => {
+export const createListing = async (req, res, next) => {
   try {
     const {
       name,
@@ -25,16 +25,12 @@ export const createListing = async (req, res) => {
       !name ||
       !description ||
       !address ||
-      !regularPrice ||
-      !discountPrice ||
-      bathrooms == null ||
-      bedrooms == null ||
-      furnished == null ||
-      parking == null ||
-      !type ||
-      offer == null ||
-      !imageUrls ||
-      !userRef
+      regularPrice === undefined ||
+      bathrooms === undefined ||
+      bedrooms === undefined ||
+      type === undefined ||
+      userRef === undefined ||
+      imageUrls.length === 0
     ) {
       return next(createError(400, "All fields are required."));
     }
@@ -60,6 +56,7 @@ export const createListing = async (req, res) => {
     const savedListing = await newListing.save();
     res.status(201).json(savedListing);
   } catch (error) {
+    console.log(error);
     if (error.name === "ValidationError") {
       next(
         createError(400, "Invalid input. Please check your data and try again.")

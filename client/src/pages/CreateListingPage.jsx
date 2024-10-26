@@ -21,20 +21,25 @@ import { app } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import StatusMessage from "../components/StatusMessage";
 import ListingTypeSelector from "../components/ListingTypeSelector";
+import { listingService } from "../services/listingService";
+import { useSelector } from "react-redux";
+import Modal from "../components/Modal";
 
 const CreateListingPage = () => {
+  const { currentUser } = useSelector((state) => state.user);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     address: "",
     bedrooms: 1,
     bathrooms: 1,
-    regularPrice: "",
-    discountedPrice: "",
+    regularPrice: 0,
+    discountedPrice: 0,
     parking: false,
     furnished: false,
     offer: false,
-    type: "rent", // Default type
+    type: "rent",
     imageUrls: [],
   });
 
@@ -180,15 +185,13 @@ const CreateListingPage = () => {
         imageUrls: uploadedUrls,
       };
 
-      console.log(finalFormData);
-
       // API call to create listing
-      // const response = await createListing(finalFormData);
-      // const listingId = response.data.id;
+      const data = await listingService.createListing(
+        finalFormData,
+        currentUser._id
+      );
 
-      // Simulated success
-      alert("Listing created successfully!");
-      navigate(`/listings/${Math.random()}`);
+      navigate(`/listing/${data._id}`);
     } catch (err) {
       console.error("Submission error:", err);
       setError(err.message || "Failed to create listing. Please try again.");
@@ -198,7 +201,7 @@ const CreateListingPage = () => {
   };
 
   return (
-    <main className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white text-center mb-10">
           Create New Listing
@@ -326,17 +329,19 @@ const CreateListingPage = () => {
                 suffix="$/month"
               />
 
-              <FormInput
-                label="Discounted Price"
-                id="discountedPrice"
-                type="number"
-                value={formData.discountedPrice}
-                onChange={handleChange}
-                min="1"
-                required
-                icon={TagIcon}
-                suffix="$/month"
-              />
+              {formData.offer && (
+                <FormInput
+                  label="Discounted Price"
+                  id="discountedPrice"
+                  type="number"
+                  value={formData.discountedPrice}
+                  onChange={handleChange}
+                  min="1"
+                  required
+                  icon={TagIcon}
+                  suffix="$/month"
+                />
+              )}
             </div>
           </div>
 
@@ -375,7 +380,7 @@ const CreateListingPage = () => {
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 };
 

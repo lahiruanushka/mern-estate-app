@@ -1,5 +1,5 @@
 export const userService = {
-  updateUser: async (userId, userData) => {
+  async updateUser(userId, userData) {
     try {
       const response = await fetch(`/api/user/${userId}`, {
         method: "PUT",
@@ -20,7 +20,7 @@ export const userService = {
       throw error; // Rethrow error for further handling
     }
   },
-  deleteUser: async (userId) => {
+  async deleteUser(userId) {
     try {
       const response = await fetch(`/api/user/${userId}`, {
         method: "DELETE",
