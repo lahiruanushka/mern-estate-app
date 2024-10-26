@@ -20,7 +20,7 @@ export const listingService = {
       return data;
     } catch (error) {
       console.error("Failed to create listing:", error.message);
-      throw error;
+      throw error; // Re-throw the error for further handling
     }
   },
   async getUserListings(userId) {
@@ -35,6 +35,26 @@ export const listingService = {
       return data;
     } catch (error) {
       console.error("Failed to fetch user listings:", error);
+      throw error;
+    }
+  },
+  async deleteListing(listingId) {
+    try {
+      const response = await fetch(`/api/listings/${listingId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to delete listing:", error);
       throw error;
     }
   },

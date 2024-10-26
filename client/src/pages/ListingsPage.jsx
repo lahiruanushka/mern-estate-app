@@ -10,6 +10,7 @@ import {
   FaExternalLinkAlt,
 } from "react-icons/fa";
 import Modal from "../components/Modal";
+import StatusMessage from "../components/StatusMessage";
 
 const ListingsPage = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -18,6 +19,7 @@ const ListingsPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [listingToDelete, setListingToDelete] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const fetchUserListings = async () => {
     try {
@@ -36,13 +38,35 @@ const ListingsPage = () => {
     fetchUserListings();
   }, []);
 
+  // Clear messages after 5 seconds
+  useEffect(() => {
+    if (successMessage || errors) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+        setErrors(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage, errors]);
+
   const handleDeleteClick = (id) => {
     setListingToDelete(id);
     setIsDeleteModalOpen(true);
   };
 
   const handleDelete = async () => {
-    console.log(listingToDelete);
+    try {
+      await listingService.deleteListing(listingToDelete);
+      setUserListings(
+        userListings.filter((listing) => listing._id !== listingToDelete)
+      );
+      setSuccessMessage("Listing deleted successfully");
+      setIsDeleteModalOpen(false);
+      setListingToDelete(null);
+    } catch (error) {
+      console.error("Error deleting listing:", error);
+      setErrors("Failed to delete listing. Please try again");
+    }
   };
 
   if (loading) {
@@ -72,14 +96,12 @@ const ListingsPage = () => {
           </Link>
         </div>
 
-        {errors && (
-          <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-500/50 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
-            <p className="flex items-center">
-              <span className="mr-2">⚠️</span>
-              {errors}
-            </p>
-          </div>
-        )}
+        {/* Error Message */}
+        {errors && <StatusMessage type="error" message={errors} />}
+
+        {/* Success Message */}
+        {successMessage && <StatusMessage type="success" message={successMessage} />}
+        
       </div>
 
       {/* Listings Grid */}

@@ -84,14 +84,37 @@ export const getUserListings = async (req, res, next) => {
 
     const listings = await Listing.find({ userRef: userId });
 
-    if (listings.length === 0) {
-      return res.status(404).json({ message: "No listings found for this user." });
-    }
-
     res.status(200).json(listings);
   } catch (error) {
     console.error(error);
     next(createError(500, "An error occurred while retrieving user listings."));
+  }
+};
+
+// Delete a specific listing
+export const deleteListing = async (req, res, next) => {
+  const { listingId } = req.params;
+  
+  try {
+    // Find the listing by ID
+    const listing = await Listing.findById(listingId);
+
+    // Check if the listing exists
+    if (!listing) {
+      return next(createError(404, "Listing not found."));
+    }
+
+    // Check if the user is the owner of the listing
+    if (listing.userRef !== req.user.id) {
+      return next(createError(403, "Unauthorized access."));
+    }
+
+    // Delete the listing
+    await Listing.findByIdAndDelete(listingId);
+    res.status(200).json({ message: "Listing deleted successfully." });
+  } catch (error) {
+    console.error(error);
+    next(createError(500, "An error occurred while deleting the listing."));
   }
 };
 
