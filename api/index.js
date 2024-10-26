@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRotes from "./routes/userRoutes.js";
 import authRotes from "./routes/authRoutes.js";
+import listingRoutes from "./routes/listingRoutes.js"
 import errorHandler from "./middlewares/errorHandler.js";
 import cookieParser from "cookie-parser";
 
@@ -20,6 +21,7 @@ app.use(cookieParser());
 // Routes
 app.use("/api/user", userRotes);
 app.use("/api/auth", authRotes);
+app.use('/api/listings', listingRoutes)
 
 // Middlewares
 app.use(errorHandler);
