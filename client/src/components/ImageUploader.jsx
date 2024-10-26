@@ -9,10 +9,10 @@ const ImageUploader = ({
   onImageRemove,
   maxImages = 6,
   maxSizeInMB = 5,
+  uploadProgress = {}, // New prop for tracking upload progress
 }) => {
   const [error, setError] = useState("");
 
-  // Supported image types
   const SUPPORTED_FORMATS = [
     "image/jpeg",
     "image/jpg",
@@ -22,12 +22,10 @@ const ImageUploader = ({
   ];
 
   const validateImage = (file) => {
-    // Check file type
     if (!SUPPORTED_FORMATS.includes(file.type)) {
       throw new Error(`${file.name} is not a supported image format`);
     }
 
-    // Check file size (convert maxSizeInMB to bytes)
     const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
     if (file.size > maxSizeInBytes) {
       throw new Error(`${file.name} exceeds ${maxSizeInMB}MB size limit`);
@@ -41,12 +39,10 @@ const ImageUploader = ({
       const files = Array.from(e.target.files);
       setError("");
 
-      // Check total number of images
       if (files.length + images.length > maxImages) {
         throw new Error(`You can only upload up to ${maxImages} images`);
       }
 
-      // Validate each file
       const validFiles = [];
       const validUrls = [];
 
@@ -56,7 +52,6 @@ const ImageUploader = ({
           validFiles.push(file);
           validUrls.push(URL.createObjectURL(file));
         } catch (error) {
-          // Revoke any URLs we've created so far
           validUrls.forEach((url) => URL.revokeObjectURL(url));
           throw error;
         }
@@ -68,7 +63,6 @@ const ImageUploader = ({
       onImagesChange(newImages, newImageUrls);
     } catch (error) {
       setError(error.message);
-      // Reset the file input
       e.target.value = "";
     }
   };
@@ -106,6 +100,16 @@ const ImageUploader = ({
 
     handleImageChange({ target: { files: dataTransfer.files } });
   };
+
+  // Function to render progress bar
+  const ProgressBar = ({ progress }) => (
+    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200">
+      <div
+        className="h-full bg-blue-500 transition-all duration-300 ease-in-out"
+        style={{ width: `${progress}%` }}
+      />
+    </div>
+  );
 
   return (
     <div className="space-y-4">
@@ -158,26 +162,41 @@ const ImageUploader = ({
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {imageUrls.map((url, index) => (
               <div key={url} className="relative group">
-                <img
-                  src={url}
-                  alt={`Preview ${index + 1}`}
-                  className="w-full h-40 object-cover rounded-lg"
-                />
+                <div className="relative">
+                  <img
+                    src={url}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-40 object-cover rounded-lg"
+                  />
+                  {/* Show progress bar when uploading */}
+                  {uploadProgress[index] !== undefined && uploadProgress[index] < 100 && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                      <div className="text-white text-sm font-medium">
+                        {uploadProgress[index]}%
+                      </div>
+                    </div>
+                  )}
+                  <ProgressBar progress={uploadProgress[index] || 0} />
+                </div>
+                
                 <div className="absolute top-2 right-2 flex gap-2">
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(index)}
                     className="p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     title="Remove image"
+                    disabled={uploadProgress[index] !== undefined && uploadProgress[index] < 100}
                   >
                     <XMarkIcon className="w-4 h-4" />
                   </button>
                 </div>
+                
                 {index === 0 && (
                   <span className="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded-md">
                     Cover
                   </span>
                 )}
+                
                 <span className="absolute bottom-2 left-2 px-2 py-1 bg-black bg-opacity-50 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
                   {formatBytes(images[index].size)}
                 </span>

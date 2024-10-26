@@ -11,6 +11,15 @@ import FeatureToggle from "../components/FeatureToggle";
 import { LuBed } from "react-icons/lu";
 import { MdOutlineBathroom } from "react-icons/md";
 import ImageUploader from "../components/ImageUploader";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { app } from "../firebase";
+import { useNavigate } from "react-router-dom";
+import StatusMessage from "../components/StatusMessage";
 
 const CreateListingPage = () => {
   const [formData, setFormData] = useState({
@@ -26,19 +35,31 @@ const CreateListingPage = () => {
     parking: false,
     furnished: false,
     offer: false,
+    firebaseImageUrls: [],
   });
 
   const [images, setImages] = useState([]);
   const [imageUrls, setImageUrls] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   const handleImagesChange = (newImages, newImageUrls) => {
     setImages(newImages);
     setImageUrls(newImageUrls);
+    setError(null);
   };
-  
+
   const handleImageRemove = (index) => {
-    setImages(prevImages => prevImages.filter((_, i) => i !== index));
-    setImageUrls(prevUrls => prevUrls.filter((_, i) => i !== index));
+    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    setImageUrls((prevUrls) => prevUrls.filter((_, i) => i !== index));
+    setUploadProgress((prev) => {
+      const newProgress = { ...prev };
+      delete newProgress[index];
+      return newProgress;
+    });
   };
 
   const handleChange = (e) => {
@@ -47,6 +68,98 @@ const CreateListingPage = () => {
       ...prev,
       [id]: value,
     }));
+    setError(null);
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) return "Property name is required";
+    if (!formData.address.trim()) return "Address is required";
+    if (!images.length) return "At least one image is required";
+    if (!formData.sale && !formData.rent)
+      return "Select either For Sale or For Rent";
+    if (
+      formData.offer &&
+      Number(formData.discountedPrice) >= Number(formData.regularPrice)
+    ) {
+      return "Discounted price must be less than regular price";
+    }
+    return null;
+  };
+
+  const storeImage = async (file, index) => {
+    return new Promise((resolve, reject) => {
+      const storage = getStorage(app);
+      const fileName = `${Date.now()}_${file.name.replace(
+        /[^a-zA-Z0-9.]/g,
+        "_"
+      )}`;
+      const storageRef = ref(storage, `/listings/${fileName}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress((prev) => ({
+            ...prev,
+            [index]: Math.round(progress),
+          }));
+        },
+        (error) => {
+          console.error("Upload error:", error);
+          reject(new Error(`Failed to upload ${file.name}`));
+        },
+        async () => {
+          try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve(downloadURL);
+          } catch (error) {
+            console.error("Get URL error:", error);
+            reject(new Error(`Failed to get download URL for ${file.name}`));
+          }
+        }
+      );
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      setError(null);
+
+      const uploadPromises = images.map((image, index) =>
+        storeImage(image, index)
+      );
+      const uploadedUrls = await Promise.all(uploadPromises);
+
+      const finalFormData = {
+        ...formData,
+        firebaseImageUrls: uploadedUrls,
+      };
+
+      console.log(finalFormData);
+
+      // API call to create listing
+      // const response = await createListing(finalFormData);
+      // const listingId = response.data.id;
+
+      // Simulated success
+      alert("Listing created successfully!");
+      navigate(`/listings/${Math.random()}`);
+    } catch (err) {
+      console.error("Submission error:", err);
+      setError(err.message || "Failed to create listing. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -56,7 +169,7 @@ const CreateListingPage = () => {
           Create New Listing
         </h1>
 
-        <form className="space-y-8">
+        <form className="space-y-8" onSubmit={handleSubmit}>
           {/* Basic Information */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
@@ -206,16 +319,25 @@ const CreateListingPage = () => {
               onImagesChange={handleImagesChange}
               onImageRemove={handleImageRemove}
               maxImages={6}
-              maxSizeInMB={5}
+              maxSizeInMB={2}
+              uploadProgress={uploadProgress}
             />
           </div>
+
+          {error && <StatusMessage type="error" message={error} />}
 
           <div className="flex justify-end">
             <button
               type="submit"
-              className="px-8 py-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              disabled={isUploading}
+              className={`px-8 py-4 bg-blue-600 text-white rounded-lg font-medium 
+                ${
+                  isUploading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                } transition-colors`}
             >
-              Create Listing
+              {isUploading ? "Creating Listing..." : "Create Listing"}
             </button>
           </div>
         </form>
