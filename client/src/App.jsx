@@ -8,6 +8,7 @@ import Header from "./components/Header";
 import PrivateRoute from "./components/PrivateRoute";
 import NotFoundPage from "./pages/NotFoundPage";
 import CreateListingPage from "./pages/CreateListingPage";
+import ListingsPage from "./pages/ListingsPage";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/create-listing" element={<CreateListingPage />} />
+          <Route path="/listings" element={<ListingsPage />} />
         </Route>
 
         {/* Catch-all route for 404 Not Found */}

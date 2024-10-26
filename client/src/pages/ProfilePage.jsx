@@ -24,7 +24,7 @@ import StatusMessage from "../components/StatusMessage";
 import FormInput from "../components/FormInput";
 import { authService } from "../services/authService";
 import Modal from "../components/Modal";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 // Constants
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
@@ -292,17 +292,6 @@ export default function ProfilePage() {
                 "Update Profile"
               )}
             </button>
-
-            <Link
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent 
-                rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 
-                dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 
-                focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 
-                disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-              to={"/create-listing"}
-            >
-              Create Listing
-            </Link>
 
             {/* Footer Actions */}
             <div className="flex justify-between pt-6 border-t border-gray-200 dark:border-gray-700">

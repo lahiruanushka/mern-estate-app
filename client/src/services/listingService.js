@@ -23,4 +23,19 @@ export const listingService = {
       throw error;
     }
   },
+  async getUserListings(userId) {
+    try {
+      const response = await fetch(`/api/listings/user/${userId}`);
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch user listings:", error);
+      throw error;
+    }
+  },
 };
