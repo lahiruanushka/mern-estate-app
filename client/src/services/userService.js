@@ -24,7 +24,7 @@ export const userService = {
     try {
       const response = await fetch(`/api/user/${userId}`, {
         method: "DELETE",
-        credentials: "include", // ensures cookies (e.g., access token) are sent with the request
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -35,6 +35,26 @@ export const userService = {
       return await response.json(); // Returns the success message
     } catch (error) {
       console.error("Error deleting user:", error);
+      throw error;
+    }
+  },
+  async getUser(userId) {
+    try {
+      const response = await fetch(`/api/user/${userId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch user");
+      }
+
+      return await response.json(); // Return the user data
+    } catch (error) {
+      console.error("Error fetching user:", error);
       throw error;
     }
   },

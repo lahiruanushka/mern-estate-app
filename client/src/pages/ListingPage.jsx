@@ -7,6 +7,7 @@ import {
   FaChair,
   FaShareAlt,
   FaMapMarkerAlt,
+  FaEnvelope,
 } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
@@ -15,13 +16,17 @@ import Feature from "../components/Feature";
 import { listingService } from "../services/listingService";
 import LoadingSpinner from "../components/LoadingSpinner";
 import StatusMessage from "../components/StatusMessage";
+import { useSelector } from "react-redux";
+import Contact from "../components/Contact";
 
 const ListingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [listing, setListing] = useState(null);
   const [copied, setCopied] = useState(false);
+
   const { listingId } = useParams();
+  const { currentUser } = useSelector((state) => state.user);
 
   useEffect(() => {
     async function fetchSingleListing() {
@@ -169,6 +174,10 @@ const ListingPage = () => {
             />
           </div>
         </div>
+
+        {currentUser && listing.userRef !== currentUser._id && (
+          <Contact listing={listing} />
+        )}
       </div>
     </main>
   );
