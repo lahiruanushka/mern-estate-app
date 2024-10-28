@@ -10,6 +10,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import CreateListingPage from "./pages/CreateListingPage";
 import ListingsPage from "./pages/ListingsPage";
 import UpdateListingPage from "./pages/UpdateListingPage";
+import ListingPage from "./pages/ListingPage";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/about" element={<About />} />
+        <Route path='/listing/:listingId' element={<ListingPage />} />
 
         {/* Private Routes */}
         <Route element={<PrivateRoute />}>

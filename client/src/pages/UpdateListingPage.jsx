@@ -23,6 +23,7 @@ import StatusMessage from "../components/StatusMessage";
 import ListingTypeSelector from "../components/ListingTypeSelector";
 import { listingService } from "../services/listingService";
 import { useSelector } from "react-redux";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const UpdateListingPage = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -262,11 +263,7 @@ const UpdateListingPage = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <LoadingSpinner size="16" color="blue-600" />;
   }
 
   return (
