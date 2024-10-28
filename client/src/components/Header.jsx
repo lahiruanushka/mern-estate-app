@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Input, Menu } from "@headlessui/react";
 import { FaBars, FaSearch } from "react-icons/fa";
 import clsx from "clsx";
@@ -6,10 +6,29 @@ import { useSelector } from "react-redux";
 import ThemeToggle from "./ThemeToggle";
 import logo from "../assets/logo.png";
 import defaultProfile from "../assets/images/default-profile.png";
+import { useEffect, useState } from "react";
 
 export default function Header() {
+  const [searchTerm, setSearchTerm] = useState('');
   const { currentUser } = useSelector((state) => state.user);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('searchTerm', searchTerm);
+    const searchQuery = urlParams.toString();
+    navigate(`/search?${searchQuery}`);
+  };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const searchTermFromUrl = urlParams.get('searchTerm');
+    if (searchTermFromUrl) {
+      setSearchTerm(searchTermFromUrl);
+    }
+  }, [location.search]);
 
   // Function to check if a link is active
   const isActive = (path) => {
@@ -48,10 +67,12 @@ export default function Header() {
           </h1>
         </Link>
 
-        <form className="p-3 rounded-lg flex items-center bg-slate-100 dark:bg-gray-700">
+        <form className="p-3 rounded-lg flex items-center bg-slate-100 dark:bg-gray-700"     onSubmit={handleSubmit}>
           <Input
             placeholder="Search..."
             className="block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm text-dark dark:text-white focus:outline-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-white/25"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button type="submit" aria-label="Search" className="ml-3">
             <FaSearch className="text-slate-600 dark:text-gray-400" />
