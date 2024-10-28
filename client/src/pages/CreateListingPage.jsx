@@ -34,7 +34,7 @@ const CreateListingPage = () => {
     bedrooms: 1,
     bathrooms: 1,
     regularPrice: 0,
-    discountedPrice: 0,
+    discountPrice: 0,
     parking: false,
     furnished: false,
     offer: false,
@@ -102,8 +102,8 @@ const CreateListingPage = () => {
     if (!formData.address.trim()) errors.push("Address is required");
     if (!images.length) errors.push("At least one image is required");
 
-    if (formData.regularPrice && formData.discountedPrice) {
-      if (Number(formData.discountedPrice) >= Number(formData.regularPrice)) {
+    if (formData.regularPrice && formData.discountPrice) {
+      if (Number(formData.discountPrice) >= Number(formData.regularPrice)) {
         errors.push("Discounted price must be less than regular price");
       }
     }
@@ -331,9 +331,9 @@ const CreateListingPage = () => {
               {formData.offer && (
                 <FormInput
                   label="Discounted Price"
-                  id="discountedPrice"
+                  id="discountPrice"
                   type="number"
-                  value={formData.discountedPrice}
+                  value={formData.discountPrice}
                   onChange={handleChange}
                   min="1"
                   required

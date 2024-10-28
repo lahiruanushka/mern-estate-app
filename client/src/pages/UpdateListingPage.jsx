@@ -34,7 +34,7 @@ const UpdateListingPage = () => {
     bedrooms: 1,
     bathrooms: 1,
     regularPrice: 0,
-    discountedPrice: 0,
+    discountPrice: 0,
     parking: false,
     furnished: false,
     offer: false,
@@ -72,7 +72,7 @@ const UpdateListingPage = () => {
           bedrooms: data.bedrooms,
           bathrooms: data.bathrooms,
           regularPrice: data.regularPrice,
-          discountedPrice: data.discountPrice || 0,
+          discountPrice: data.discountPrice || 0,
           parking: data.parking,
           furnished: data.furnished,
           offer: data.offer,
@@ -162,8 +162,8 @@ const UpdateListingPage = () => {
       errors.push("Maximum 6 images allowed");
     }
 
-    if (formData.regularPrice && formData.discountedPrice) {
-      if (Number(formData.discountedPrice) >= Number(formData.regularPrice)) {
+    if (formData.regularPrice && formData.discountPrice) {
+      if (Number(formData.discountPrice) >= Number(formData.regularPrice)) {
         errors.push("Discounted price must be less than regular price");
       }
     }
@@ -401,9 +401,9 @@ const UpdateListingPage = () => {
               {formData.offer && (
                 <FormInput
                   label="Discounted Price"
-                  id="discountedPrice"
+                  id="discountPrice"
                   type="number"
-                  value={formData.discountedPrice}
+                  value={formData.discountPrice}
                   onChange={handleChange}
                   min="1"
                   required
