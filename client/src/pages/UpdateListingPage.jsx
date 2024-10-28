@@ -311,18 +311,6 @@ const UpdateListingPage = () => {
             </div>
           </div>
 
-          {/* Listing Type Selection */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-              Listing Type
-            </h2>
-
-            <ListingTypeSelector
-              selectedType={formData.type}
-              onTypeChange={handleTypeChange}
-            />
-          </div>
-
           {/* Features */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
@@ -341,13 +329,6 @@ const UpdateListingPage = () => {
                 enabled={formData.furnished}
                 onChange={(checked) =>
                   setFormData({ ...formData, furnished: checked })
-                }
-              />
-              <FeatureToggle
-                label="Special Offer"
-                enabled={formData.offer}
-                onChange={(checked) =>
-                  setFormData({ ...formData, offer: checked })
                 }
               />
             </div>
@@ -382,32 +363,6 @@ const UpdateListingPage = () => {
                 required
                 icon={MdOutlineBathroom}
               />
-
-              <FormInput
-                label="Regular Price"
-                id="regularPrice"
-                type="number"
-                value={formData.regularPrice}
-                onChange={handleChange}
-                min="1"
-                required
-                icon={CurrencyDollarIcon}
-                suffix="$/month"
-              />
-
-              {formData.offer && (
-                <FormInput
-                  label="Discounted Price"
-                  id="discountPrice"
-                  type="number"
-                  value={formData.discountPrice}
-                  onChange={handleChange}
-                  min="1"
-                  required
-                  icon={TagIcon}
-                  suffix="$/month"
-                />
-              )}
             </div>
           </div>
 
@@ -428,6 +383,62 @@ const UpdateListingPage = () => {
               existingImages={existingImageUrls}
             />
           </div>
+
+          {/* Listing Type Selection */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+              Listing Type
+            </h2>
+
+            <ListingTypeSelector
+              selectedType={formData.type}
+              onTypeChange={handleTypeChange}
+            />
+          </div>
+
+          {/* Property Prizing */}
+          {formData.type === "rent" && (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                Monthly Prize
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <FeatureToggle
+                  label="Special Offer"
+                  enabled={formData.offer}
+                  onChange={(checked) =>
+                    setFormData({ ...formData, offer: checked })
+                  }
+                />
+
+                <FormInput
+                  label="Regular Price"
+                  id="regularPrice"
+                  type="number"
+                  value={formData.regularPrice}
+                  onChange={handleChange}
+                  min="1"
+                  required
+                  icon={CurrencyDollarIcon}
+                  suffix="$/month"
+                />
+
+                {formData.offer && (
+                  <FormInput
+                    label="Discounted Price"
+                    id="discountPrice"
+                    type="number"
+                    value={formData.discountPrice}
+                    onChange={handleChange}
+                    min="1"
+                    required
+                    icon={TagIcon}
+                    suffix="$/month"
+                  />
+                )}
+              </div>
+            </div>
+          )}
 
           {error && <StatusMessage type="error" message={error} />}
 

@@ -7,7 +7,7 @@ const ListingTypeSelector = ({ selectedType, onTypeChange }) => {
       value: "sale",
       label: "For Sale",
       icon: HomeIcon,
-      description: "Set the monthly price if this property is for sale.",
+      description: "This property is only for sale.",
     },
     {
       value: "rent",
