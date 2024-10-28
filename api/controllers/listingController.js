@@ -174,3 +174,22 @@ export const deleteListing = async (req, res, next) => {
   }
 };
 
+// Get a single listing by ID
+export const getSingleListing = async (req, res, next) => {
+  const { listingId } = req.params;
+
+  try {
+    // Find the listing by ID
+    const listing = await Listing.findById(listingId);
+
+    // Check if the listing exists
+    if (!listing) {
+      return next(createError(404, "Listing not found."));
+    }
+
+    res.status(200).json(listing);
+  } catch (error) {
+    console.error(error);
+    next(createError(500, "An error occurred while retrieving the listing."));
+  }
+};

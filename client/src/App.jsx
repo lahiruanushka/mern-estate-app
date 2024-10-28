@@ -9,6 +9,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import NotFoundPage from "./pages/NotFoundPage";
 import CreateListingPage from "./pages/CreateListingPage";
 import ListingsPage from "./pages/ListingsPage";
+import UpdateListingPage from "./pages/UpdateListingPage";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/create-listing" element={<CreateListingPage />} />
+          <Route path="/edit-listing/:listingId" element={<UpdateListingPage />} />
           <Route path="/listings" element={<ListingsPage />} />
         </Route>
 

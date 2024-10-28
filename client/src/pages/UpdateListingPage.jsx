@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   HomeIcon,
   MapPinIcon,
@@ -18,13 +18,13 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import StatusMessage from "../components/StatusMessage";
 import ListingTypeSelector from "../components/ListingTypeSelector";
 import { listingService } from "../services/listingService";
 import { useSelector } from "react-redux";
 
-const CreateListingPage = () => {
+const UpdateListingPage = () => {
   const { currentUser } = useSelector((state) => state.user);
 
   const [formData, setFormData] = useState({
@@ -47,23 +47,75 @@ const CreateListingPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [existingImageUrls, setExistingImageUrls] = useState([]);
+  const [newImages, setNewImages] = useState([]);
+  const [newImageUrls, setNewImageUrls] = useState([]);
 
   const navigate = useNavigate();
+  const params = useParams();
 
-  const handleImagesChange = (newImages, newImageUrls) => {
-    setImages(newImages);
-    setImageUrls(newImageUrls);
+  // Get the listing ID from the URL
+  const listingId = params.listingId;
+
+  // Fetch and populate listing data
+  useEffect(() => {
+    async function fetchSingleListing() {
+      try {
+        setIsLoading(true);
+        const data = await listingService.getSingleListing(listingId);
+
+        setFormData({
+          name: data.name,
+          description: data.description,
+          address: data.address,
+          bedrooms: data.bedrooms,
+          bathrooms: data.bathrooms,
+          regularPrice: data.regularPrice,
+          discountedPrice: data.discountPrice || 0,
+          parking: data.parking,
+          furnished: data.furnished,
+          offer: data.offer,
+          type: data.type,
+          imageUrls: data.imageUrls,
+        });
+
+        // Set existing images
+        setExistingImageUrls(data.imageUrls);
+      } catch (error) {
+        console.error("Listing fetching error:", error);
+        setError(
+          error.message || "Failed to fetch the listing. Please try again."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchSingleListing();
+  }, [listingId]);
+
+  const handleImagesChange = (newImagesArray, newImageUrlsArray) => {
+    setNewImages(newImagesArray);
+    setNewImageUrls(newImageUrlsArray);
     setError(null);
   };
 
-  const handleImageRemove = (index) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-    setImageUrls((prevUrls) => prevUrls.filter((_, i) => i !== index));
-    setUploadProgress((prev) => {
-      const newProgress = { ...prev };
-      delete newProgress[index];
-      return newProgress;
-    });
+  const handleImageRemove = (index, isExistingImage) => {
+    if (isExistingImage) {
+      // Remove from existing images
+      setExistingImageUrls((prev) => prev.filter((_, i) => i !== index));
+      setFormData((prev) => ({
+        ...prev,
+        imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+      }));
+    } else {
+      // Remove from new images
+      const adjustedIndex = index - existingImageUrls.length;
+      setNewImages((prev) => prev.filter((_, i) => i !== adjustedIndex));
+      setNewImageUrls((prev) => prev.filter((_, i) => i !== adjustedIndex));
+    }
+    setError(null);
   };
 
   const handleChange = (e) => {
@@ -100,7 +152,15 @@ const CreateListingPage = () => {
 
     if (!formData.name.trim()) errors.push("Property name is required");
     if (!formData.address.trim()) errors.push("Address is required");
-    if (!images.length) errors.push("At least one image is required");
+
+    // Check total images (existing + new)
+    const totalImages = existingImageUrls.length + newImages.length;
+    if (totalImages === 0) {
+      errors.push("At least one image is required");
+    }
+    if (totalImages > 6) {
+      errors.push("Maximum 6 images allowed");
+    }
 
     if (formData.regularPrice && formData.discountedPrice) {
       if (Number(formData.discountedPrice) >= Number(formData.regularPrice)) {
@@ -174,36 +234,46 @@ const CreateListingPage = () => {
       setIsUploading(true);
       setError(null);
 
-      const uploadPromises = images.map((image, index) =>
-        storeImage(image, index)
-      );
-      const uploadedUrls = await Promise.all(uploadPromises);
+      // Upload new images if any
+      let uploadedUrls = [];
+      if (newImages.length > 0) {
+        const uploadPromises = newImages.map((image, index) =>
+          storeImage(image, index)
+        );
+        uploadedUrls = await Promise.all(uploadPromises);
+      }
 
+      // Combine existing and new image URLs
       const finalFormData = {
         ...formData,
-        imageUrls: uploadedUrls,
+        imageUrls: [...existingImageUrls, ...uploadedUrls],
       };
 
-      // API call to create listing
-      const data = await listingService.createListing(
-        finalFormData,
-        currentUser._id
-      );
+      // API call to update listing
+      await listingService.updateListing(finalFormData, listingId);
 
-      navigate(`/listing/${data._id}`);
+      navigate(`/listing/${listingId}`);
     } catch (err) {
-      console.error("Submission error:", err);
-      setError(err.message || "Failed to create listing. Please try again.");
+      console.error("Update error:", err);
+      setError(err.message || "Failed to update listing. Please try again.");
     } finally {
       setIsUploading(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white text-center mb-10">
-          Create New Listing
+          Update Listing
         </h1>
 
         <form className="space-y-8" onSubmit={handleSubmit}>
@@ -351,13 +421,14 @@ const CreateListingPage = () => {
             </h2>
 
             <ImageUploader
-              images={images}
-              imageUrls={imageUrls}
+              images={newImages}
+              imageUrls={[...existingImageUrls, ...newImageUrls]}
               onImagesChange={handleImagesChange}
               onImageRemove={handleImageRemove}
               maxImages={6}
               maxSizeInMB={2}
               uploadProgress={uploadProgress}
+              existingImages={existingImageUrls}
             />
           </div>
 
@@ -374,7 +445,7 @@ const CreateListingPage = () => {
                     : "hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 } transition-colors`}
             >
-              {isUploading ? "Creating Listing..." : "Create Listing"}
+              {isUploading ? "Updating Listing..." : "Update Listing"}
             </button>
           </div>
         </form>
@@ -383,4 +454,4 @@ const CreateListingPage = () => {
   );
 };
 
-export default CreateListingPage;
+export default UpdateListingPage;

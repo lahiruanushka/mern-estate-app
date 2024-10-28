@@ -58,4 +58,42 @@ export const listingService = {
       throw error;
     }
   },
+  async getSingleListing(listingId) {
+    try {
+      const response = await fetch(`/api/listings/${listingId}`);
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch single listing:", error);
+      throw error;
+    }
+  },
+  async updateListing(formData, listingId) {
+    try {
+      const res = await fetch(`/api/listings/${listingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Error: ${res.status} ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to update listing:", error.message);
+      throw error;
+    }
+  },
 };

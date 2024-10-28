@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { PhotoIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import StatusMessage from "./StatusMessage";
 
@@ -9,7 +9,8 @@ const ImageUploader = ({
   onImageRemove,
   maxImages = 6,
   maxSizeInMB = 5,
-  uploadProgress = {}, // New prop for tracking upload progress
+  uploadProgress = {},
+  existingImages = [], // New prop to track existing images separately
 }) => {
   const [error, setError] = useState("");
 
@@ -39,8 +40,10 @@ const ImageUploader = ({
       const files = Array.from(e.target.files);
       setError("");
 
-      if (files.length + images.length > maxImages) {
-        throw new Error(`You can only upload up to ${maxImages} images`);
+      // Calculate total images including existing ones
+      const totalImages = files.length + imageUrls.length;
+      if (totalImages > maxImages) {
+        throw new Error(`You can only upload up to ${maxImages} images total`);
       }
 
       const validFiles = [];
@@ -63,13 +66,21 @@ const ImageUploader = ({
       onImagesChange(newImages, newImageUrls);
     } catch (error) {
       setError(error.message);
-      e.target.value = "";
+    } finally {
+      e.target.value = ""; // Reset input
     }
   };
 
   const handleRemoveImage = (index) => {
-    URL.revokeObjectURL(imageUrls[index]);
-    onImageRemove(index);
+    // Check if the image is from existing images or newly added
+    const isExistingImage = index < existingImages.length;
+
+    if (!isExistingImage) {
+      // For newly added images, revoke the object URL
+      URL.revokeObjectURL(imageUrls[index]);
+    }
+
+    onImageRemove(index, isExistingImage);
     setError("");
   };
 
@@ -101,7 +112,6 @@ const ImageUploader = ({
     handleImageChange({ target: { files: dataTransfer.files } });
   };
 
-  // Function to render progress bar
   const ProgressBar = ({ progress }) => (
     <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200">
       <div
@@ -111,11 +121,14 @@ const ImageUploader = ({
     </div>
   );
 
+  const remainingSlots = maxImages - imageUrls.length;
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          The first image will be used as the cover (max {maxImages} images)
+          The first image will be used as the cover ({imageUrls.length}/
+          {maxImages} images)
         </p>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Max size: {maxSizeInMB}MB
@@ -124,34 +137,37 @@ const ImageUploader = ({
 
       {error && <StatusMessage type="error" message={error} />}
 
-      {/* Image Upload Area */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <label
-            className="flex items-center justify-center w-full h-32 px-4 transition bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg appearance-none cursor-pointer hover:border-blue-500 focus:outline-none"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <div className="flex flex-col items-center space-y-2">
-              <PhotoIcon className="w-8 h-8 text-gray-400 dark:text-gray-300" />
-              <span className="text-sm text-gray-500 dark:text-gray-300">
-                Drop files or click to upload
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Supported formats: JPG, PNG, WEBP, HEIC
-              </span>
-            </div>
-            <input
-              type="file"
-              className="hidden"
-              multiple
-              accept={SUPPORTED_FORMATS.join(",")}
-              onChange={handleImageChange}
-            />
-          </label>
+      {/* Only show upload area if there's room for more images */}
+      {remainingSlots > 0 && (
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <label
+              className="flex items-center justify-center w-full h-32 px-4 transition bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg appearance-none cursor-pointer hover:border-blue-500 focus:outline-none"
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="flex flex-col items-center space-y-2">
+                <PhotoIcon className="w-8 h-8 text-gray-400 dark:text-gray-300" />
+                <span className="text-sm text-gray-500 dark:text-gray-300">
+                  Drop files or click to upload
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {remainingSlots} slot{remainingSlots !== 1 ? "s" : ""}{" "}
+                  remaining
+                </span>
+              </div>
+              <input
+                type="file"
+                className="hidden"
+                multiple
+                accept={SUPPORTED_FORMATS.join(",")}
+                onChange={handleImageChange}
+              />
+            </label>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Image Preview Section */}
       {imageUrls.length > 0 && (
@@ -168,38 +184,37 @@ const ImageUploader = ({
                     alt={`Preview ${index + 1}`}
                     className="w-full h-40 object-cover rounded-lg"
                   />
-                  {/* Show progress bar when uploading */}
-                  {uploadProgress[index] !== undefined && uploadProgress[index] < 100 && (
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                      <div className="text-white text-sm font-medium">
-                        {uploadProgress[index]}%
+                  {uploadProgress[index] !== undefined &&
+                    uploadProgress[index] < 100 && (
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                        <div className="text-white text-sm font-medium">
+                          {uploadProgress[index]}%
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                   <ProgressBar progress={uploadProgress[index] || 0} />
                 </div>
-                
+
                 <div className="absolute top-2 right-2 flex gap-2">
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(index)}
                     className="p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     title="Remove image"
-                    disabled={uploadProgress[index] !== undefined && uploadProgress[index] < 100}
+                    disabled={
+                      uploadProgress[index] !== undefined &&
+                      uploadProgress[index] < 100
+                    }
                   >
                     <XMarkIcon className="w-4 h-4" />
                   </button>
                 </div>
-                
+
                 {index === 0 && (
                   <span className="absolute top-2 left-2 px-2 py-1 bg-blue-500 text-white text-xs rounded-md">
                     Cover
                   </span>
                 )}
-                
-                <span className="absolute bottom-2 left-2 px-2 py-1 bg-black bg-opacity-50 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                  {formatBytes(images[index].size)}
-                </span>
               </div>
             ))}
           </div>
