@@ -24,3 +24,4 @@ const StatusMessage = ({ type, message }) => {
 };
 
 export default StatusMessage;
+
