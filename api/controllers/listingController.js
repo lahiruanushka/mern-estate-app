@@ -91,6 +91,62 @@ export const getUserListings = async (req, res, next) => {
   }
 };
 
+// Update a specific listing
+export const updateListing = async (req, res, next) => {
+  const { listingId } = req.params;
+  const {
+    name,
+    description,
+    address,
+    regularPrice,
+    discountPrice,
+    bathrooms,
+    bedrooms,
+    furnished,
+    parking,
+    type,
+    offer,
+    imageUrls,
+  } = req.body;
+
+  try {
+    // Find the listing by ID
+    const listing = await Listing.findById(listingId);
+
+    // Check if the listing exists
+    if (!listing) {
+      return next(createError(404, "Listing not found."));
+    }
+
+    // Check if the user is the owner of the listing
+    if (listing.userRef !== req.user.id) {
+      return next(createError(403, "Unauthorized access."));
+    }
+
+    // Update listing with provided fields
+    listing.name = name || listing.name;
+    listing.description = description || listing.description;
+    listing.address = address || listing.address;
+    listing.regularPrice = regularPrice ?? listing.regularPrice;
+    listing.discountPrice = discountPrice ?? listing.discountPrice;
+    listing.bathrooms = bathrooms ?? listing.bathrooms;
+    listing.bedrooms = bedrooms ?? listing.bedrooms;
+    listing.furnished = furnished ?? listing.furnished;
+    listing.parking = parking ?? listing.parking;
+    listing.type = type || listing.type;
+    listing.offer = offer ?? listing.offer;
+    listing.imageUrls = imageUrls || listing.imageUrls;
+
+    // Save the updated listing
+    const updatedListing = await listing.save();
+    res.status(200).json(updatedListing);
+  } catch (error) {
+    console.error(error);
+    next(createError(500, "An error occurred while updating the listing."));
+  }
+};
+
+
 // Delete a specific listing
 export const deleteListing = async (req, res, next) => {
   const { listingId } = req.params;
