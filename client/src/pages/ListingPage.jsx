@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { 
-  FaBed, 
-  FaBath, 
-  FaParking, 
-  FaChair, 
+import {
+  FaBed,
+  FaBath,
+  FaParking,
+  FaChair,
   FaShareAlt,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
 } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
@@ -51,8 +51,8 @@ const ListingPage = () => {
   if (!listing) return null;
 
   const price = listing.offer
-    ? listing.discountPrice.toLocaleString('en-US')
-    : listing.regularPrice.toLocaleString('en-US');
+    ? listing.discountPrice.toLocaleString("en-US")
+    : listing.regularPrice.toLocaleString("en-US");
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
@@ -116,14 +116,17 @@ const ListingPage = () => {
           {/* Price and Status Tags */}
           <div className="flex flex-wrap gap-4">
             <span className="px-4 py-2 rounded-full text-lg font-semibold bg-blue-500 text-white">
-              ${price}{listing.type === 'rent' ? '/month' : ''}
+              ${price}
+              {listing.type === "rent" ? "/month" : ""}
             </span>
-            <span className={`px-4 py-2 rounded-full text-lg font-semibold ${
-              listing.type === 'rent' 
-                ? 'bg-purple-500 text-white' 
-                : 'bg-green-500 text-white'
-            }`}>
-              {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
+            <span
+              className={`px-4 py-2 rounded-full text-lg font-semibold ${
+                listing.type === "rent"
+                  ? "bg-purple-500 text-white"
+                  : "bg-green-500 text-white"
+              }`}
+            >
+              {listing.type === "rent" ? "For Rent" : "For Sale"}
             </span>
             {listing.offer && (
               <span className="px-4 py-2 rounded-full text-lg font-semibold bg-red-500 text-white">
@@ -134,22 +137,41 @@ const ListingPage = () => {
 
           {/* Description */}
           <div className="prose dark:prose-invert max-w-none">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Description</h2>
-            <p className="text-gray-600 dark:text-gray-300">{listing.description}</p>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Description
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300">
+              {listing.description}
+            </p>
           </div>
 
           {/* Features Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Feature icon={FaBed} text={`${listing.bedrooms} ${listing.bedrooms > 1 ? 'Beds' : 'Bed'}`} />
-            <Feature icon={FaBath} text={`${listing.bathrooms} ${listing.bathrooms > 1 ? 'Baths' : 'Bath'}`} />
-            <Feature icon={FaParking} text={listing.parking ? 'Parking Available' : 'No Parking'} />
-            <Feature icon={FaChair} text={listing.furnished ? 'Furnished' : 'Unfurnished'} />
+            <Feature
+              icon={FaBed}
+              text={`${listing.bedrooms} ${
+                listing.bedrooms > 1 ? "Beds" : "Bed"
+              }`}
+            />
+            <Feature
+              icon={FaBath}
+              text={`${listing.bathrooms} ${
+                listing.bathrooms > 1 ? "Baths" : "Bath"
+              }`}
+            />
+            <Feature
+              icon={FaParking}
+              text={listing.parking ? "Parking Available" : "No Parking"}
+            />
+            <Feature
+              icon={FaChair}
+              text={listing.furnished ? "Furnished" : "Unfurnished"}
+            />
           </div>
         </div>
       </div>
     </main>
   );
 };
-
 
 export default ListingPage;

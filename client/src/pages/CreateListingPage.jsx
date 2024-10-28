@@ -316,35 +316,51 @@ const CreateListingPage = () => {
             />
           </div>
 
-          {/* Listing Type Selection */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6">
+          {/* Listing Type */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 transition-colors">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
               Listing Type
             </h2>
-
             <ListingTypeSelector
               selectedType={formData.type}
               onTypeChange={handleTypeChange}
             />
           </div>
 
-          {/* Property Prizing */}
-          {formData.type === "rent" && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6">
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-                Monthly Prize
+          {/* Prizing */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 transition-colors">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                {formData.type === "rent" ? "Monthly Rent" : "Selling Price"}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {formData.type === "rent"
+                  ? "Set your monthly rental rate"
+                  : "Set your property price"}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-1">
                 <FeatureToggle
                   label="Special Offer"
+                  description={`Add a promotional ${
+                    formData.type === "rent" ? "rental rate" : "price"
+                  }`}
                   enabled={formData.offer}
                   onChange={(checked) =>
                     setFormData({ ...formData, offer: checked })
                   }
                 />
+              </div>
 
+              <div className="lg:col-span-1">
                 <FormInput
-                  label="Regular Price"
+                  label={
+                    formData.type === "rent"
+                      ? "Regular Monthly Rate"
+                      : "Regular Price"
+                  }
                   id="regularPrice"
                   type="number"
                   value={formData.regularPrice}
@@ -352,25 +368,47 @@ const CreateListingPage = () => {
                   min="1"
                   required
                   icon={CurrencyDollarIcon}
-                  suffix="$/month"
+                  suffix={formData.type === "rent" ? "$/month" : "$"}
+                  placeholder={
+                    formData.type === "rent"
+                      ? "Enter monthly rent"
+                      : "Enter selling price"
+                  }
+                  className="w-full"
                 />
+              </div>
 
-                {formData.offer && (
+              {formData.offer && (
+                <div className="lg:col-span-1">
                   <FormInput
-                    label="Discounted Price"
+                    label={
+                      formData.type === "rent"
+                        ? "Special Monthly Rate"
+                        : "Special Offer Price"
+                    }
                     id="discountPrice"
                     type="number"
                     value={formData.discountPrice}
                     onChange={handleChange}
                     min="1"
+                    max={formData.regularPrice}
                     required
                     icon={TagIcon}
-                    suffix="$/month"
+                    suffix={formData.type === "rent" ? "$/month" : "$"}
+                    placeholder={
+                      formData.type === "rent"
+                        ? "Enter promotional rent"
+                        : "Enter offer price"
+                    }
+                    className="w-full"
+                    helperText={`Must be less than regular ${
+                      formData.type === "rent" ? "rent" : "price"
+                    }`}
                   />
-                )}
-              </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           {error && <StatusMessage type="error" message={error} />}
 
