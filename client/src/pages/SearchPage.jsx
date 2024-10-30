@@ -19,6 +19,7 @@ export default function SearchPage() {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [listings, setListings] = useState([]);
+  const [showMore, setShowMore] = useState(false);
 
   const [filters, setFilters] = useState({
     searchTerm: "",
@@ -73,9 +74,16 @@ export default function SearchPage() {
     const fetchListings = async () => {
       try {
         setLoading(true);
+        setShowMore(false);
         const searchQuery = urlParams.toString();
         const data = await listingService.getAllListings(searchQuery);
         setListings(data);
+
+        if (data.length > 8) {
+          setShowMore(true);
+        } else {
+          setShowMore(false);
+        }
       } catch (error) {
         console.error("Error fetching listings:", error);
       } finally {
@@ -143,6 +151,25 @@ export default function SearchPage() {
     });
     navigate(`/search?${urlParams.toString()}`);
     setShowFiltersModal(false);
+  };
+
+  const onShowMoreClick = async () => {
+    const numberOfListings = listings.length;
+    const startIndex = numberOfListings;
+    const urlParams = new URLSearchParams(location.search);
+    urlParams.set("startIndex", startIndex);
+    const searchQuery = urlParams.toString();
+
+    try {
+      const data = await listingService.getAllListings(searchQuery);
+
+      if (data.length < 9) {
+        setShowMore(false);
+      }
+      setListings([...listings, ...data]);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const sortOptions = [
@@ -543,6 +570,16 @@ export default function SearchPage() {
             ))
           )}
         </div>
+
+        {/* Show more button */}
+        {showMore && (
+          <button
+            onClick={onShowMoreClick}
+            className="text-blue-700 hover:underline p-7 text-center w-full"
+          >
+            Show more
+          </button>
+        )}
       </div>
     </div>
   );
