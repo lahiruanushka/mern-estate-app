@@ -1,34 +1,170 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   SearchIcon,
-  Home,
   Car,
   Sofa,
   Tag,
   SlidersHorizontal,
-  ArrowDownWideNarrow,
   Building2,
   X,
 } from "lucide-react";
-import { Switch, RadioGroup } from "@headlessui/react";
-import { Dialog } from "@headlessui/react";
+import { Switch, RadioGroup, Dialog } from "@headlessui/react";
+import { listingService } from "../services/listingService";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function SearchPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [listings, setListings] = useState([]);
+
   const [filters, setFilters] = useState({
     searchTerm: "",
     type: "all",
     offer: false,
     parking: false,
     furnished: false,
+    sort: "createdAt",
+    order: "desc",
   });
-  const [sortOption, setSortOption] = useState("latest");
+
   const [showFiltersModal, setShowFiltersModal] = useState(false);
 
+  // Add a temporary filters state for the modal
+  const [tempFilters, setTempFilters] = useState(filters);
+
+  useEffect(() => {
+    // Get URL parameters
+    const urlParams = new URLSearchParams(location.search);
+    const searchTermFromUrl = urlParams.get("searchTerm");
+    const typeFromUrl = urlParams.get("type");
+    const parkingFromUrl = urlParams.get("parking");
+    const furnishedFromUrl = urlParams.get("furnished");
+    const offerFromUrl = urlParams.get("offer");
+    const sortFromUrl = urlParams.get("sort");
+    const orderFromUrl = urlParams.get("order");
+
+    // filters if URL parameters exist
+    if (
+      searchTermFromUrl ||
+      typeFromUrl ||
+      parkingFromUrl ||
+      furnishedFromUrl ||
+      offerFromUrl ||
+      sortFromUrl ||
+      orderFromUrl
+    ) {
+      const newFilters = {
+        searchTerm: searchTermFromUrl || "",
+        type: typeFromUrl || "all",
+        parking: parkingFromUrl === "true",
+        furnished: furnishedFromUrl === "true",
+        offer: offerFromUrl === "true",
+        sort: sortFromUrl || "createdAt",
+        order: orderFromUrl || "desc",
+      };
+      setFilters(newFilters);
+      setTempFilters(newFilters);
+    }
+
+    // Fetch listings
+    const fetchListings = async () => {
+      try {
+        setLoading(true);
+        const searchQuery = urlParams.toString();
+        const data = await listingService.getAllListings(searchQuery);
+        setListings(data);
+      } catch (error) {
+        console.error("Error fetching listings:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchListings();
+  }, [location.search]);
+
+  // Update tempFilters when modal opens
+  useEffect(() => {
+    setTempFilters(filters);
+  }, [showFiltersModal]);
+
+  const handleChange = (field, value) => {
+    if (field === "sort") {
+      // Find the sort option and extract its values
+      const sortOption = sortOptions.find((option) => option.id === value);
+      if (sortOption) {
+        setFilters({
+          ...filters,
+          sort: sortOption.value.sort,
+          order: sortOption.value.order,
+        });
+      }
+    } else {
+      setFilters({ ...filters, [field]: value });
+    }
+  };
+
+  const handleModalChange = (field, value) => {
+    if (field === "sort") {
+      // Find the sort option and extract its values
+      const sortOption = sortOptions.find((option) => option.id === value);
+      if (sortOption) {
+        setTempFilters({
+          ...tempFilters,
+          sort: sortOption.value.sort,
+          order: sortOption.value.order,
+        });
+      }
+    } else {
+      setTempFilters({ ...tempFilters, [field]: value });
+    }
+  };
+
+  const handleSubmit = () => {
+    const urlParams = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      urlParams.set(key, value);
+    });
+    navigate(`/search?${urlParams.toString()}`);
+    setShowFiltersModal(false);
+  };
+
+  const handleModalSubmit = () => {
+    // Apply temp filters to main filters
+    setFilters(tempFilters);
+
+    // Update URL with new filters
+    const urlParams = new URLSearchParams();
+    Object.entries(tempFilters).forEach(([key, value]) => {
+      urlParams.set(key, value);
+    });
+    navigate(`/search?${urlParams.toString()}`);
+    setShowFiltersModal(false);
+  };
+
   const sortOptions = [
-    { id: "price-desc", name: "Price: High to Low" },
-    { id: "price-asc", name: "Price: Low to High" },
-    { id: "latest", name: "Latest" },
-    { id: "oldest", name: "Oldest" },
+    {
+      id: "price_desc",
+      name: "Price: High to Low",
+      value: { sort: "price", order: "desc" },
+    },
+    {
+      id: "price_asc",
+      name: "Price: Low to High",
+      value: { sort: "price", order: "asc" },
+    },
+    {
+      id: "createdAt_desc",
+      name: "Latest",
+      value: { sort: "createdAt", order: "desc" },
+    },
+    {
+      id: "createdAt_asc",
+      name: "Oldest",
+      value: { sort: "createdAt", order: "asc" },
+    },
   ];
 
   const propertyTypes = [
@@ -36,6 +172,15 @@ export default function SearchPage() {
     { id: "rent", name: "For Rent" },
     { id: "sale", name: "For Sale" },
   ];
+
+  const getSortValue = (filters) => {
+    const { sort, order } = filters;
+    return (
+      sortOptions.find(
+        (option) => option.value.sort === sort && option.value.order === order
+      )?.id || "createdAt_desc"
+    );
+  };
 
   const FilterSwitch = ({ label, icon, checked, onChange }) => (
     <Switch.Group>
@@ -68,6 +213,20 @@ export default function SearchPage() {
       {/* Sidebar */}
       <div className="hidden md:block w-80 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 p-6 rounded-md m-3">
         <div className="space-y-6">
+          {/* Search Input */}
+          <div className="relative">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search properties..."
+              value={filters.searchTerm}
+              onChange={(e) => handleChange("searchTerm", e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg
+                       bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                       focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
+            />
+          </div>
+
           {/* Property Type */}
           <div>
             <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
@@ -75,7 +234,7 @@ export default function SearchPage() {
             </h3>
             <RadioGroup
               value={filters.type}
-              onChange={(value) => setFilters({ ...filters, type: value })}
+              onChange={(value) => handleChange("type", value)}
             >
               <div className="space-y-2">
                 {propertyTypes.map((type) => (
@@ -92,26 +251,28 @@ export default function SearchPage() {
                     }
                   >
                     {({ checked }) => (
-                      <div className="flex w-full items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="text-sm">
-                            <RadioGroup.Label
-                              className={`font-medium ${
-                                checked
-                                  ? "text-blue-900 dark:text-blue-100"
-                                  : "text-gray-900 dark:text-gray-100"
-                              }`}
-                            >
-                              {type.name}
-                            </RadioGroup.Label>
+                      <>
+                        <div className="flex w-full items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="text-sm">
+                              <RadioGroup.Label
+                                className={`font-medium ${
+                                  checked
+                                    ? "text-blue-900 dark:text-blue-100"
+                                    : "text-gray-900 dark:text-gray-100"
+                                }`}
+                              >
+                                {type.name}
+                              </RadioGroup.Label>
+                            </div>
                           </div>
+                          {checked && (
+                            <div className="shrink-0 text-blue-500">
+                              <Building2 className="h-5 w-5" />
+                            </div>
+                          )}
                         </div>
-                        {checked && (
-                          <div className="shrink-0 text-blue-500">
-                            <Building2 className="h-5 w-5" />
-                          </div>
-                        )}
-                      </div>
+                      </>
                     )}
                   </RadioGroup.Option>
                 ))}
@@ -129,25 +290,19 @@ export default function SearchPage() {
                 label="Parking"
                 icon={<Car className="w-5 h-5 text-gray-500" />}
                 checked={filters.parking}
-                onChange={(checked) =>
-                  setFilters({ ...filters, parking: checked })
-                }
+                onChange={(checked) => handleChange("parking", checked)}
               />
               <FilterSwitch
                 label="Furnished"
                 icon={<Sofa className="w-5 h-5 text-gray-500" />}
                 checked={filters.furnished}
-                onChange={(checked) =>
-                  setFilters({ ...filters, furnished: checked })
-                }
+                onChange={(checked) => handleChange("furnished", checked)}
               />
               <FilterSwitch
                 label="Special Offer"
                 icon={<Tag className="w-5 h-5 text-gray-500" />}
                 checked={filters.offer}
-                onChange={(checked) =>
-                  setFilters({ ...filters, offer: checked })
-                }
+                onChange={(checked) => handleChange("offer", checked)}
               />
             </div>
           </div>
@@ -158,12 +313,12 @@ export default function SearchPage() {
               Sort By
             </h3>
             <select
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
+              value={getSortValue(filters)}
+              onChange={(e) => handleChange("sort", e.target.value)}
               className="w-full border border-gray-200 dark:border-gray-700 rounded-lg
-                       bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                       py-2 px-3 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600
-                       focus:border-transparent"
+                   bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                   py-2 px-3 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600
+                   focus:border-transparent"
             >
               {sortOptions.map((option) => (
                 <option key={option.id} value={option.id}>
@@ -175,10 +330,11 @@ export default function SearchPage() {
 
           {/* Search Button */}
           <button
+            onClick={handleSubmit}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg
-                     flex items-center justify-center gap-2 transition-colors duration-200
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                     dark:focus:ring-offset-gray-900"
+                   flex items-center justify-center gap-2 transition-colors duration-200
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                   dark:focus:ring-offset-gray-900"
           >
             <SearchIcon className="w-5 h-5" />
             Apply Filters
@@ -221,14 +377,30 @@ export default function SearchPage() {
             </div>
 
             <div className="space-y-6">
+              {/* Search Input */}
+              <div className="relative">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search properties..."
+                  value={tempFilters.searchTerm}
+                  onChange={(e) =>
+                    handleModalChange("searchTerm", e.target.value)
+                  }
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg
+                     bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                     focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
+                />
+              </div>
+
               {/* Property Type */}
               <div>
                 <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
                   Property Type
                 </h3>
                 <RadioGroup
-                  value={filters.type}
-                  onChange={(value) => setFilters({ ...filters, type: value })}
+                  value={tempFilters.type}
+                  onChange={(value) => handleModalChange("type", value)}
                 >
                   <div className="space-y-2">
                     {propertyTypes.map((type) => (
@@ -241,30 +413,32 @@ export default function SearchPage() {
                               ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
                               : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                           }
-                        relative flex cursor-pointer rounded-lg px-4 py-3 border focus:outline-none`
+                      relative flex cursor-pointer rounded-lg px-4 py-3 border focus:outline-none`
                         }
                       >
                         {({ checked }) => (
-                          <div className="flex w-full items-center justify-between">
-                            <div className="flex items-center">
-                              <div className="text-sm">
-                                <RadioGroup.Label
-                                  className={`font-medium ${
-                                    checked
-                                      ? "text-blue-900 dark:text-blue-100"
-                                      : "text-gray-900 dark:text-gray-100"
-                                  }`}
-                                >
-                                  {type.name}
-                                </RadioGroup.Label>
+                          <>
+                            <div className="flex w-full items-center justify-between">
+                              <div className="flex items-center">
+                                <div className="text-sm">
+                                  <RadioGroup.Label
+                                    className={`font-medium ${
+                                      checked
+                                        ? "text-blue-900 dark:text-blue-100"
+                                        : "text-gray-900 dark:text-gray-100"
+                                    }`}
+                                  >
+                                    {type.name}
+                                  </RadioGroup.Label>
+                                </div>
                               </div>
+                              {checked && (
+                                <div className="shrink-0 text-blue-500">
+                                  <Building2 className="h-5 w-5" />
+                                </div>
+                              )}
                             </div>
-                            {checked && (
-                              <div className="shrink-0 text-blue-500">
-                                <Building2 className="h-5 w-5" />
-                              </div>
-                            )}
-                          </div>
+                          </>
                         )}
                       </RadioGroup.Option>
                     ))}
@@ -281,26 +455,24 @@ export default function SearchPage() {
                   <FilterSwitch
                     label="Parking"
                     icon={<Car className="w-5 h-5 text-gray-500" />}
-                    checked={filters.parking}
+                    checked={tempFilters.parking}
                     onChange={(checked) =>
-                      setFilters({ ...filters, parking: checked })
+                      handleModalChange("parking", checked)
                     }
                   />
                   <FilterSwitch
                     label="Furnished"
                     icon={<Sofa className="w-5 h-5 text-gray-500" />}
-                    checked={filters.furnished}
+                    checked={tempFilters.furnished}
                     onChange={(checked) =>
-                      setFilters({ ...filters, furnished: checked })
+                      handleModalChange("furnished", checked)
                     }
                   />
                   <FilterSwitch
                     label="Special Offer"
                     icon={<Tag className="w-5 h-5 text-gray-500" />}
-                    checked={filters.offer}
-                    onChange={(checked) =>
-                      setFilters({ ...filters, offer: checked })
-                    }
+                    checked={tempFilters.offer}
+                    onChange={(checked) => handleModalChange("offer", checked)}
                   />
                 </div>
               </div>
@@ -311,12 +483,12 @@ export default function SearchPage() {
                   Sort By
                 </h3>
                 <select
-                  value={sortOption}
-                  onChange={(e) => setSortOption(e.target.value)}
+                  value={getSortValue(tempFilters)}
+                  onChange={(e) => handleModalChange("sort", e.target.value)}
                   className="w-full border border-gray-200 dark:border-gray-700 rounded-lg
-                         bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                         py-2 px-3 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600
-                         focus:border-transparent"
+                   bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+                   py-2 px-3 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600
+                   focus:border-transparent"
                 >
                   {sortOptions.map((option) => (
                     <option key={option.id} value={option.id}>
@@ -331,15 +503,12 @@ export default function SearchPage() {
                 <button
                   onClick={() => setShowFiltersModal(false)}
                   className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 
-                         hover:bg-gray-200 dark:hover:bg-gray-600 px-4 py-2 rounded-lg"
+                     hover:bg-gray-200 dark:hover:bg-gray-600 px-4 py-2 rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    // Apply filters logic here
-                    setShowFiltersModal(false);
-                  }}
+                  onClick={handleModalSubmit}
                   className="flex-1 bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg"
                 >
                   Apply Filters
@@ -357,13 +526,30 @@ export default function SearchPage() {
             Property Listings
           </h1>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            24 results found
+            {loading ? 0 : `${listings.length}`} results found
           </div>
         </div>
 
-        {/* Results grid would go here */}
+        {/* Results grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Property cards would go here */}
+          {loading ? (
+            <LoadingSpinner />
+          ) : listings.length === 0 ? (
+            <div>No listings found</div>
+          ) : (
+            listings.map((listing) => (
+              <div
+                key={listing._id}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
+              >
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold dark:text-white">
+                    {listing.name}
+                  </h3>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

@@ -96,4 +96,20 @@ export const listingService = {
       throw error;
     }
   },
+  async getAllListings(searchQuery) {
+    try {
+
+      const response = await fetch(`/api/listings/?${searchQuery}`);
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to fetchlistings:", error);
+      throw error;
+    }
+  },
 };

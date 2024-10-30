@@ -1,9 +1,7 @@
-const LoadingSpinner = ({ size = "16", color = "blue-600" }) => {
+const LoadingSpinner = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div
-        className={`animate-spin rounded-full h-${size} w-${size} border-b-2 border-${color}`}
-      ></div>
+    <div className="flex items-center justify-center min-h-[300px]">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 dark:border-indigo-400"></div>
     </div>
   );
 };

@@ -10,8 +10,8 @@ import NotFoundPage from "./pages/NotFoundPage";
 import CreateListingPage from "./pages/CreateListingPage";
 import ListingsPage from "./pages/ListingsPage";
 import UpdateListingPage from "./pages/UpdateListingPage";
-import ListingPage from "./pages/ListingPage";
 import SearchPage from "./pages/SearchPage";
+import SingleListingPage from "./pages/SingleListingPage";
 
 export default function App() {
   return (
@@ -23,14 +23,17 @@ export default function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/about" element={<About />} />
-        <Route path='/listing/:listingId' element={<ListingPage />} />
-        <Route path='/search' element={<SearchPage />} />
+        <Route path="/listing/:listingId" element={<SingleListingPage />} />
+        <Route path="/search" element={<SearchPage />} />
 
         {/* Private Routes */}
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/create-listing" element={<CreateListingPage />} />
-          <Route path="/edit-listing/:listingId" element={<UpdateListingPage />} />
+          <Route
+            path="/edit-listing/:listingId"
+            element={<UpdateListingPage />}
+          />
           <Route path="/listings" element={<ListingsPage />} />
         </Route>
 

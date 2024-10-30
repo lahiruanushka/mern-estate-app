@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   FaBed,
@@ -7,7 +7,6 @@ import {
   FaChair,
   FaShareAlt,
   FaMapMarkerAlt,
-  FaEnvelope,
 } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
@@ -19,7 +18,7 @@ import StatusMessage from "../components/StatusMessage";
 import { useSelector } from "react-redux";
 import Contact from "../components/Contact";
 
-const ListingPage = () => {
+const SingleListingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [listing, setListing] = useState(null);
@@ -183,4 +182,4 @@ const ListingPage = () => {
   );
 };
 
-export default ListingPage;
+export default SingleListingPage;
