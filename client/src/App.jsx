@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { PublicRoute } from "./components/PublicRoute";
 import About from "./pages/AboutPage";
 import Home from "./pages/HomePage";
 import Profile from "./pages/ProfilePage";
@@ -20,13 +21,17 @@ export default function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route path="/sign-up" element={<SignUp />} />
         <Route path="/about" element={<About />} />
         <Route path="/listing/:listingId" element={<SingleListingPage />} />
         <Route path="/search" element={<SearchPage />} />
 
-        {/* Private Routes */}
+        {/* Authentication Routes - Protected from authenticated users */}
+        <Route element={<PublicRoute />}>
+          <Route path="/sign-in" element={<SignIn />} />
+          <Route path="/sign-up" element={<SignUp />} />
+        </Route>
+
+        {/* Private Routes - Protected from unauthenticated users */}
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/create-listing" element={<CreateListingPage />} />

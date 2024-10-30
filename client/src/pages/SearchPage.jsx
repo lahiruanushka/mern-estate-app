@@ -13,6 +13,7 @@ import { Switch, RadioGroup, Dialog } from "@headlessui/react";
 import { listingService } from "../services/listingService";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ListingItem from "../components/ListingItem";
+import NoResults from "../components/NoResults";
 
 export default function SearchPage() {
   const navigate = useNavigate();
@@ -170,6 +171,26 @@ export default function SearchPage() {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleResetSearch = () => {
+    // Define default filter values
+    const defaultFilters = {
+      searchTerm: "",
+      type: "all",
+      offer: false,
+      parking: false,
+      furnished: false,
+      sort: "createdAt",
+      order: "desc",
+    };
+
+    // Reset both main filters and temporary filters
+    setFilters(defaultFilters);
+    setTempFilters(defaultFilters);
+
+    // Reset URL to default search state
+    navigate("/search");
   };
 
   const sortOptions = [
@@ -558,18 +579,20 @@ export default function SearchPage() {
           </div>
         </div>
 
+        {/* Loading Spinner */}
+        {loading && <LoadingSpinner />}
+
+        {/* No Result Message */}
+        {listings.length === 0 && <NoResults handleResetSearch={handleResetSearch} />}
+
         {/* Results grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading ? (
-            <LoadingSpinner />
-          ) : listings.length === 0 ? (
-            <div>No listings found</div>
-          ) : (
-            listings.map((listing) => (
+        {listings.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {listings.map((listing) => (
               <ListingItem key={listing._id} listing={listing} />
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Show more button */}
         {showMore && (
