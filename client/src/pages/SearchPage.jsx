@@ -12,6 +12,7 @@ import {
 import { Switch, RadioGroup, Dialog } from "@headlessui/react";
 import { listingService } from "../services/listingService";
 import LoadingSpinner from "../components/LoadingSpinner";
+import ListingItem from "../components/ListingItem";
 
 export default function SearchPage() {
   const navigate = useNavigate();
@@ -538,16 +539,7 @@ export default function SearchPage() {
             <div>No listings found</div>
           ) : (
             listings.map((listing) => (
-              <div
-                key={listing._id}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
-              >
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold dark:text-white">
-                    {listing.name}
-                  </h3>
-                </div>
-              </div>
+              <ListingItem key={listing._id} listing={listing} />
             ))
           )}
         </div>
