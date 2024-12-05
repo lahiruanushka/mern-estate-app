@@ -21,7 +21,7 @@ const listingSchema = new mongoose.Schema(
     discountPrice: {
       type: Number,
       required: true,
-      default:0,
+      default: 0,
     },
     bathrooms: {
       type: Number,
@@ -49,7 +49,7 @@ const listingSchema = new mongoose.Schema(
     offer: {
       type: Boolean,
       required: true,
-      default: false
+      default: false,
     },
     imageUrls: {
       type: Array,
@@ -59,10 +59,13 @@ const listingSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    geolocation: {
+      type: Array,
+    },
   },
   { timestamps: true }
 );
 
-const Listing = mongoose.model('Listing',listingSchema);
+const Listing = mongoose.model("Listing", listingSchema);
 
 export default Listing;

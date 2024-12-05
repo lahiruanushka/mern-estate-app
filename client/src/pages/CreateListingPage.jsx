@@ -40,6 +40,7 @@ const CreateListingPage = () => {
     offer: false,
     type: "rent",
     imageUrls: [],
+    geolocation: [0, 0],
   });
 
   const [images, setImages] = useState([]);
@@ -162,6 +163,34 @@ const CreateListingPage = () => {
     });
   };
 
+  const getGeolocation = async (address) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
+          address
+        )}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Geocoding request failed");
+      }
+
+      const results = await response.json();
+
+      if (results && results.length > 0) {
+        return {
+          lat: parseFloat(results[0].lat),
+          lng: parseFloat(results[0].lon),
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      return null;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationError = validateForm();
@@ -179,9 +208,18 @@ const CreateListingPage = () => {
       );
       const uploadedUrls = await Promise.all(uploadPromises);
 
+      // Get geolocation for the address
+      const geocodedLocation = await getGeolocation(formData.address);
+
+      // Store geolocation as an array
+      const geolocationArray = geocodedLocation
+        ? [geocodedLocation.lat, geocodedLocation.lng]
+        : [0, 0];
+
       const finalFormData = {
         ...formData,
         imageUrls: uploadedUrls,
+        geolocation: geolocationArray,
       };
 
       // API call to create listing

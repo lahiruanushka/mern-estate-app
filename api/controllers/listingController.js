@@ -18,6 +18,7 @@ export const createListing = async (req, res, next) => {
       offer,
       imageUrls,
       userRef,
+      geolocation,
     } = req.body;
 
     // Validate required fields
@@ -49,6 +50,7 @@ export const createListing = async (req, res, next) => {
       type,
       offer,
       imageUrls,
+      geolocation,
       userRef,
     });
 

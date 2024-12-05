@@ -13,6 +13,8 @@ import ListingsPage from "./pages/ListingsPage";
 import UpdateListingPage from "./pages/UpdateListingPage";
 import SearchPage from "./pages/SearchPage";
 import SingleListingPage from "./pages/SingleListingPage";
+import AutoScrollToTop from "./components/AutoScrollToTop";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 
 export default function App() {
   return (
@@ -45,6 +47,9 @@ export default function App() {
         {/* Catch-all route for 404 Not Found */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+
+      <ScrollToTopButton />
+      <AutoScrollToTop />
     </>
   );
 }

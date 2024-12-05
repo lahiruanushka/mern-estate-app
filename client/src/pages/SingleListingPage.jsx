@@ -17,6 +17,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import StatusMessage from "../components/StatusMessage";
 import { useSelector } from "react-redux";
 import Contact from "../components/Contact";
+import LocationMap from "../components/LocationMap";
 
 const SingleListingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -174,6 +175,12 @@ const SingleListingPage = () => {
           </div>
         </div>
 
+        {/* Location Map */}
+        {listing.geolocation && (
+          <LocationMap listing={listing}/>
+        )}
+
+        {/* Contact */}
         {currentUser && listing.userRef !== currentUser._id && (
           <Contact listing={listing} />
         )}
