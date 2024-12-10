@@ -15,8 +15,11 @@ import SearchPage from "./pages/SearchPage";
 import SingleListingPage from "./pages/SingleListingPage";
 import AutoScrollToTop from "./components/AutoScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
+import MaintenanceMessage from "./components/MaintenanceMessage";
 
 export default function App() {
+  const isMaintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE === "true";
+
   return (
     <>
       <Header />
@@ -29,8 +32,14 @@ export default function App() {
 
         {/* Authentication Routes - Protected from authenticated users */}
         <Route element={<PublicRoute />}>
-          <Route path="/sign-in" element={<SignIn />} />
-          <Route path="/sign-up" element={<SignUp />} />
+          <Route
+            path="/sign-in"
+            element={isMaintenanceMode ? <MaintenanceMessage /> : <SignIn />}
+          />
+          <Route
+            path="/sign-in"
+            element={isMaintenanceMode ? <MaintenanceMessage /> : <SignUp />}
+          />
         </Route>
 
         {/* Private Routes - Protected from unauthenticated users */}
