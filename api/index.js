@@ -3,10 +3,15 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRotes from "./routes/userRoutes.js";
 import authRotes from "./routes/authRoutes.js";
-import listingRoutes from "./routes/listingRoutes.js"
+import listingRoutes from "./routes/listingRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import cookieParser from "cookie-parser";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// Workaround for __dirname in ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load environment variables
 dotenv.config();
@@ -22,8 +27,9 @@ app.use(cookieParser());
 // Routes
 app.use("/api/user", userRotes);
 app.use("/api/auth", authRotes);
-app.use('/api/listings', listingRoutes)
+app.use("/api/listings", listingRoutes);
 
+// Serve static files
 app.use(express.static(path.join(__dirname, "/client/dist")));
 
 app.get("*", (req, res) => {
