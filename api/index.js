@@ -6,6 +6,7 @@ import authRotes from "./routes/authRoutes.js";
 import listingRoutes from "./routes/listingRoutes.js"
 import errorHandler from "./middlewares/errorHandler.js";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 // Load environment variables
 dotenv.config();
