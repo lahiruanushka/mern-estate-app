@@ -30,7 +30,6 @@ export default function Header() {
     }
   }, [location.search]);
 
-  // Function to check if a link is active
   const isActive = (path) => {
     if (path === "/" && location.pathname !== "/") {
       return false;
@@ -38,7 +37,6 @@ export default function Header() {
     return location.pathname.startsWith(path);
   };
 
-  // Reusable link style function
   const getLinkStyles = (path) => {
     return clsx(
       "text-slate-700 dark:text-white hover:underline transition-colors duration-200",
@@ -49,7 +47,6 @@ export default function Header() {
     );
   };
 
-  // Reusable mobile menu item style function
   const getMobileMenuStyles = (active, path) => {
     return clsx("block px-4 py-2 text-sm text-gray-700 dark:text-white", {
       "bg-gray-100 dark:bg-gray-600": active,
@@ -67,7 +64,10 @@ export default function Header() {
           </h1>
         </Link>
 
-        <form className="p-3 rounded-lg flex items-center bg-slate-100 dark:bg-gray-700"     onSubmit={handleSubmit}>
+        <form 
+          className="p-3 rounded-lg flex items-center bg-slate-100 dark:bg-gray-700" 
+          onSubmit={handleSubmit}
+        >
           <Input
             placeholder="Search..."
             className="block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm text-dark dark:text-white focus:outline-none data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-white/25"
@@ -118,7 +118,7 @@ export default function Header() {
         </nav>
 
         {/* Mobile menu button */}
-        <div className="sm:hidden">
+        <div className="sm:hidden relative">
           <Menu>
             {({ open }) => (
               <>
@@ -130,86 +130,87 @@ export default function Header() {
                 </Menu.Button>
                 <Menu.Items
                   className={clsx(
-                    "absolute right-0 mt-2 w-48 border rounded-md shadow-lg bg-white dark:bg-gray-700",
-                    open ? "" : "hidden"
+                    "absolute right-0 top-full mt-2 w-48 origin-top-right border rounded-md shadow-lg bg-white dark:bg-gray-700 z-50",
+                    { "opacity-100 visible": open, "opacity-0 invisible": !open }
                   )}
                 >
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link to="/" className={getMobileMenuStyles(active, "/")}>
-                        Home
-                      </Link>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        to="/about"
-                        className={getMobileMenuStyles(active, "/about")}
-                      >
-                        About
-                      </Link>
-                    )}
-                  </Menu.Item>
-                  {/* only shown when user is logged in */}
-                  {currentUser && (
+                  <div className="py-1">
                     <Menu.Item>
                       {({ active }) => (
-                        <Link
-                          to="/listings"
-                          className={getMobileMenuStyles(active, "/listings")}
-                        >
-                          Listings
+                        <Link to="/" className={getMobileMenuStyles(active, "/")}>
+                          Home
                         </Link>
                       )}
                     </Menu.Item>
-                  )}
-                  <Menu.Item>
-                    {({ active }) => (
-                      <Link
-                        to={currentUser ? "/profile" : "/sign-in"}
-                        className={clsx(
-                          "block px-4 py-2 text-sm flex items-center",
-                          getMobileMenuStyles(
-                            active,
-                            currentUser ? "/profile" : "/sign-in"
-                          )
+                    <Menu.Item>
+                      {({ active }) => (
+                        <Link
+                          to="/about"
+                          className={getMobileMenuStyles(active, "/about")}
+                        >
+                          About
+                        </Link>
+                      )}
+                    </Menu.Item>
+                    {currentUser && (
+                      <Menu.Item>
+                        {({ active }) => (
+                          <Link
+                            to="/listings"
+                            className={getMobileMenuStyles(active, "/listings")}
+                          >
+                            Listings
+                          </Link>
                         )}
-                      >
-                        {currentUser ? (
-                          <>
-                            <div
-                              className={clsx("flex items-center", {
-                                "ring-2 ring-blue-500 rounded-full":
-                                  isActive("/profile"),
-                              })}
-                            >
-                              <img
-                                className="rounded-full h-7 w-7 object-cover mr-2"
-                                src={currentUser.avatar || defaultProfile}
-                                alt="profile"
-                              />
-                            </div>
-                            <span>Profile</span>
-                          </>
-                        ) : (
-                          <span>Sign in</span>
-                        )}
-                      </Link>
+                      </Menu.Item>
                     )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <div
-                        className={clsx(
-                          "block px-4 py-2 text-sm text-gray-700 dark:text-white",
-                          { "bg-gray-100 dark:bg-gray-600": active }
-                        )}
-                      >
-                        <ThemeToggle />
-                      </div>
-                    )}
-                  </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <Link
+                          to={currentUser ? "/profile" : "/sign-in"}
+                          className={clsx(
+                            "block px-4 py-2 text-sm flex items-center",
+                            getMobileMenuStyles(
+                              active,
+                              currentUser ? "/profile" : "/sign-in"
+                            )
+                          )}
+                        >
+                          {currentUser ? (
+                            <>
+                              <div
+                                className={clsx("flex items-center", {
+                                  "ring-2 ring-blue-500 rounded-full":
+                                    isActive("/profile"),
+                                })}
+                              >
+                                <img
+                                  className="rounded-full h-7 w-7 object-cover mr-2"
+                                  src={currentUser.avatar || defaultProfile}
+                                  alt="profile"
+                                />
+                              </div>
+                              <span>Profile</span>
+                            </>
+                          ) : (
+                            <span>Sign in</span>
+                          )}
+                        </Link>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <div
+                          className={clsx(
+                            "block px-4 py-2 text-sm text-gray-700 dark:text-white",
+                            { "bg-gray-100 dark:bg-gray-600": active }
+                          )}
+                        >
+                          <ThemeToggle />
+                        </div>
+                      )}
+                    </Menu.Item>
+                  </div>
                 </Menu.Items>
               </>
             )}
