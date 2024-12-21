@@ -16,6 +16,7 @@ import SingleListingPage from "./pages/SingleListingPage";
 import AutoScrollToTop from "./components/AutoScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import MaintenanceMessage from "./components/MaintenanceMessage";
+import Footer from "./components/Footer";
 
 export default function App() {
   const isMaintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE === "true";
@@ -57,8 +58,9 @@ export default function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
 
-      <ScrollToTopButton />
       <AutoScrollToTop />
+      <ScrollToTopButton />
+      <Footer />
     </>
   );
 }
