@@ -4,7 +4,7 @@ import { useState } from "react";
 import MaintenanceModal from "./MaintenanceModal";
 
 export default function Footer() {
-  const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(true);
+  const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(false);
 
   const currentYear = new Date().getFullYear();
 
