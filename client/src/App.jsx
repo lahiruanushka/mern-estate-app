@@ -38,7 +38,7 @@ export default function App() {
             element={isMaintenanceMode ? <MaintenanceMessage /> : <SignIn />}
           />
           <Route
-            path="/sign-in"
+            path="/sign-up"
             element={isMaintenanceMode ? <MaintenanceMessage /> : <SignUp />}
           />
         </Route>
